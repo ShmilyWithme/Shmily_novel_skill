@@ -46,6 +46,15 @@
 QQ：1943477162
 邮箱：z2960775@gmail.com ；zfc200116@163.com
 
+---
+
+## 界面演示
+
+![主界面](images/screenshot_1.png)
+
+![写作界面](images/screenshot_2.png)
+
+![功能展示](images/screenshot_3.png)
 
 ---
 
