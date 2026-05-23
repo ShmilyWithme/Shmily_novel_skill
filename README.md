@@ -98,26 +98,36 @@ python novel_writer_gui.py
 
 ## 安装要求
 
+### EXE 版本（推荐）
+
+- [Claude Code CLI](https://docs.anthropic.com/claude-code)（必须）
+- 无需安装 Python，开箱即用
+
+### 源码版本
+
 - Python 3.8+
-- [Claude Code CLI](https://docs.anthropic.com/claude-code)
+- Claude Code CLI
+- 需安装依赖：`pip install -r requirements.txt`
 
 ## 快速开始
 
-### 方式一：直接运行 EXE（推荐）
+### 方式一：下载 EXE（推荐）
 
-下载 `dist/网文写作助手.exe`，双击即可运行，无需安装 Python。
+1. 前往 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases) 页面下载 `网文写作助手.exe`
+2. 双击运行，程序会自动在当前目录创建 Skill 配置文件
+3. 开始创作！
+
+**特性：**
+- 单文件运行，无需安装
+- 自带 Skill 配置，无需手动配置
+- 首次运行自动初始化
 
 ### 方式二：从源码运行
 
 ```bash
-# 克隆仓库
 git clone https://github.com/ShmilyWithme/Shmily_novel_skill.git
 cd Shmily_novel_skill
-
-# 安装依赖
 pip install -r requirements.txt
-
-# 启动 GUI
 python novel_writer_gui.py
 ```
 
@@ -156,11 +166,15 @@ pip install pyinstaller
 # 一键打包（Windows）
 双击 build.bat
 
-# 或手动打包
-pyinstaller --onefile --windowed --name "网文写作助手" novel_writer_gui.py
+# 或手动打包（包含 Skill 文件）
+pyinstaller --onefile --windowed --name "网文写作助手" \
+    --add-data ".claude;.claude/" \
+    novel_writer_gui.py
 ```
 
 打包完成后，exe 文件在 `dist/` 目录中。
+
+**注意：** 打包时会自动包含 `.claude` 目录中的 Skill 文件，确保用户下载后可直接使用。
 
 详细打包说明见 [BUILD_README.md](BUILD_README.md)
 
