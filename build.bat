@@ -30,6 +30,7 @@ pyinstaller --noconfirm --onefile --windowed ^
     --name "网文写作助手" ^
     --icon=NONE ^
     --add-data "%CTK_PATH%;customtkinter\" ^
+    --add-data ".claude;.claude\" ^
     --hidden-import customtkinter ^
     --hidden-import tkinter ^
     novel_writer_gui.py

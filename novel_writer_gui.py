@@ -6,11 +6,13 @@
 """
 
 import os
+import sys
 import json
 import re
 import subprocess
 import threading
 import time
+import shutil
 from datetime import datetime
 from tkinter import messagebox
 
@@ -33,6 +35,37 @@ from customtkinter import (
 # 设置主题
 ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
+
+
+def get_resource_path(relative_path):
+    """获取资源文件的绝对路径"""
+    if getattr(sys, 'frozen', False):
+        # 打包后的路径
+        base_path = sys._MEIPASS
+    else:
+        # 开发时的路径
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
+
+def ensure_skill_files():
+    """确保 Skill 文件存在于当前目录"""
+    skill_dir = os.path.join(os.getcwd(), '.claude', 'skills', 'novel-write')
+    if os.path.exists(skill_dir):
+        return True
+
+    # 从打包资源中释放
+    resource_skill_dir = get_resource_path('.claude')
+    if os.path.exists(resource_skill_dir):
+        try:
+            dest_dir = os.path.join(os.getcwd(), '.claude')
+            shutil.copytree(resource_skill_dir, dest_dir, dirs_exist_ok=True)
+            return True
+        except Exception as e:
+            print(f"释放 Skill 文件失败: {e}")
+            return False
+
+    return False
 
 
 class ModernNovelWriterApp:
@@ -1370,6 +1403,9 @@ class EditDialog:
 
 def main():
     """主函数"""
+    # 确保 Skill 文件存在
+    ensure_skill_files()
+
     app = ModernNovelWriterApp()
     app.run()
 
