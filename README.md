@@ -53,13 +53,13 @@ QQ：1943477162
 
 ### 方式一：下载 EXE（推荐）
 
-前往 [Releases](https://github.com/你的用户名/novel_write/releases) 页面下载最新版本的 `网文写作助手.exe`，双击即可运行，无需安装 Python。
+前往 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases) 页面下载最新版本的 `网文写作助手.exe`，双击即可运行，无需安装 Python。
 
 ### 方式二：从源码运行
 
 ```bash
-git clone https://github.com/你的用户名/novel_write.git
-cd novel_write
+git clone https://github.com/ShmilyWithme/Shmily_novel_skill.git
+cd Shmily_novel_skill
 pip install -r requirements.txt
 python novel_writer_gui.py
 ```
@@ -102,8 +102,8 @@ python novel_writer_gui.py
 
 ```bash
 # 克隆仓库
-git clone https://github.com/你的用户名/novel_write.git
-cd novel_write
+git clone https://github.com/ShmilyWithme/Shmily_novel_skill.git
+cd Shmily_novel_skill
 
 # 安装依赖
 pip install -r requirements.txt
