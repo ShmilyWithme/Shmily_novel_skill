@@ -1,0 +1,38 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+*.spec
+
+# 用户小说项目（每个用户自己的内容）
+洋柿子我来了/
+
+# Claude Code 会话数据
+.session_id
+.claude/sessions/
+
+# 导出文件（自动生成）
+export/
+
+# 时间记录文件
+.time_record
+
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 环境
+.env
+*.log

@@ -1,0 +1,1378 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+网文写作助手 GUI 界面 - 现代风格
+基于 customtkinter 的图形化界面
+"""
+
+import os
+import json
+import re
+import subprocess
+import threading
+import time
+from datetime import datetime
+from tkinter import messagebox
+
+import customtkinter as ctk
+from customtkinter import (
+    CTk,
+    CTkFrame,
+    CTkLabel,
+    CTkButton,
+    CTkEntry,
+    CTkTextbox,
+    CTkTabview,
+    CTkOptionMenu,
+    CTkToplevel,
+    CTkFont,
+    CTkScrollableFrame
+)
+
+
+# 设置主题
+ctk.set_appearance_mode("dark")
+ctk.set_default_color_theme("blue")
+
+
+class ModernNovelWriterApp:
+    """现代风格网文写作助手"""
+
+    def __init__(self):
+        self.root = CTk()
+        self.root.title("网文写作助手")
+        self.root.geometry("1400x900")
+        self.root.minsize(1200, 700)
+
+        # 项目状态
+        self.project_path = None
+        self.project_config = {}
+        self._cmd_running = False
+        self.proc = None
+
+        # 创建界面
+        self.create_ui()
+
+        # 窗口关闭时清理进程
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+
+    def create_ui(self):
+        """创建主界面"""
+        # 主容器
+        self.main_container = CTkFrame(self.root, fg_color="transparent")
+        self.main_container.pack(fill="both", expand=True, padx=15, pady=15)
+
+        # 左侧面板
+        self.create_left_panel()
+
+        # 右侧面板
+        self.create_right_panel()
+
+        # 底部状态栏
+        self.create_status_bar()
+
+    def create_left_panel(self):
+        """创建左侧面板"""
+        self.left_panel = CTkFrame(self.main_container, width=280, corner_radius=15)
+        self.left_panel.pack(side="left", fill="y", padx=(0, 15))
+        self.left_panel.pack_propagate(False)
+
+        # 创建可滚动的容器
+        self.left_scroll = CTkScrollableFrame(self.left_panel, fg_color="transparent")
+        self.left_scroll.pack(fill="both", expand=True)
+
+        # Logo 和标题
+        header_frame = CTkFrame(self.left_scroll, fg_color="transparent")
+        header_frame.pack(fill="x", padx=15, pady=(20, 10))
+
+        CTkLabel(header_frame, text="网文写作助手",
+                 font=CTkFont(size=24, weight="bold")).pack(anchor="w")
+        CTkLabel(header_frame, text="Claude Code 集成版",
+                 font=CTkFont(size=12), text_color="gray").pack(anchor="w")
+
+        # 项目信息卡片
+        self.create_project_card()
+
+        # 快捷操作按钮
+        self.create_action_buttons()
+
+    def create_project_card(self):
+        """创建项目信息卡片"""
+        card = CTkFrame(self.left_scroll, corner_radius=12)
+        card.pack(fill="x", padx=15, pady=10)
+
+        # 项目名称
+        self.project_name_var = ctk.StringVar(value="未打开项目")
+        CTkLabel(card, text="当前项目",
+                 font=CTkFont(size=11), text_color="gray").pack(anchor="w", padx=15, pady=(15, 0))
+        CTkLabel(card, textvariable=self.project_name_var,
+                 font=CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(0, 5))
+
+        # 项目类型
+        self.project_type_var = ctk.StringVar(value="")
+        CTkLabel(card, textvariable=self.project_type_var,
+                 font=CTkFont(size=12), text_color="gray").pack(anchor="w", padx=15, pady=(0, 15))
+
+    def create_action_buttons(self):
+        """创建快捷操作按钮"""
+        # 项目操作
+        CTkLabel(self.left_scroll, text="项目操作",
+                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(15, 5))
+
+        project_buttons = [
+            ("新建小说", self.new_project),
+            ("打开项目", self.open_project),
+            ("保存项目", self.save_project),
+        ]
+
+        for text, command in project_buttons:
+            btn = CTkButton(self.left_scroll, text=text, command=command,
+                           height=40, corner_radius=10, anchor="w")
+            btn.pack(fill="x", padx=15, pady=3)
+
+        # AI 功能
+        CTkLabel(self.left_scroll, text="AI 功能",
+                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+
+        ai_buttons = [
+            ("生成总大纲", self.generate_outline),
+            ("规划章节", self.plan_chapter),
+            ("写章节", self.write_chapter),
+            ("续写", self.continue_writing),
+            ("审稿", self.review_chapter),
+            ("润色", self.polish_chapter),
+        ]
+
+        for text, command in ai_buttons:
+            btn = CTkButton(self.left_scroll, text=text, command=command,
+                           height=36, corner_radius=10, fg_color="transparent",
+                           border_width=1, text_color=("gray10", "gray90"),
+                           hover_color=("gray70", "gray30"), anchor="w")
+            btn.pack(fill="x", padx=15, pady=2)
+
+        # 管理功能
+        CTkLabel(self.left_scroll, text="管理功能",
+                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+
+        manage_buttons = [
+            ("人物管理", self.view_characters),
+            ("世界观设定", self.edit_worldbuilding),
+            ("风格配置", self.style_settings),
+            ("统计分析", self.word_stats),
+            ("导出小说", self.export_novel),
+        ]
+
+        for text, command in manage_buttons:
+            btn = CTkButton(self.left_scroll, text=text, command=command,
+                           height=36, corner_radius=10, fg_color="transparent",
+                           border_width=1, text_color=("gray10", "gray90"),
+                           hover_color=("gray70", "gray30"), anchor="w")
+            btn.pack(fill="x", padx=15, pady=2)
+
+        # 主题切换
+        theme_frame = CTkFrame(self.left_scroll, fg_color="transparent")
+        theme_frame.pack(fill="x", padx=15, pady=(20, 15))
+
+        CTkLabel(theme_frame, text="外观模式:").pack(side="left", padx=(0, 10))
+
+        self.theme_var = ctk.StringVar(value="dark")
+        theme_menu = CTkOptionMenu(theme_frame, values=["浅色", "深色", "系统"],
+                                    variable=self.theme_var, command=self.change_theme,
+                                    width=120)
+        theme_menu.pack(side="right")
+
+    def create_right_panel(self):
+        """创建右侧面板"""
+        self.right_panel = CTkFrame(self.main_container, corner_radius=15)
+        self.right_panel.pack(side="right", fill="both", expand=True)
+
+        # 标签页视图
+        self.tabview = CTkTabview(self.right_panel, corner_radius=12)
+        self.tabview.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # 创建标签页
+        self.create_writing_tab()
+        self.create_outline_tab()
+        self.create_terminal_tab()
+        self.create_stats_tab()
+
+    def create_writing_tab(self):
+        """创建写作标签页"""
+        self.tabview.add("写作")
+
+        # 工具栏
+        toolbar = CTkFrame(self.tabview.tab("写作"), fg_color="transparent")
+        toolbar.pack(fill="x", padx=10, pady=(10, 5))
+
+        CTkButton(toolbar, text="保存章节", command=self.save_chapter,
+                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="字数统计", command=self.count_words,
+                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+
+        # 章节选择
+        chapter_frame = CTkFrame(self.tabview.tab("写作"), fg_color="transparent")
+        chapter_frame.pack(fill="x", padx=10, pady=5)
+
+        CTkLabel(chapter_frame, text="当前章节:").pack(side="left", padx=(0, 10))
+        self.chapter_var = ctk.StringVar(value="暂无章节")
+        self.chapter_menu = CTkOptionMenu(chapter_frame, values=["暂无章节"],
+                                          variable=self.chapter_var, width=150,
+                                          command=self._on_chapter_selected)
+        self.chapter_menu.pack(side="left")
+
+        self.word_count_var = ctk.StringVar(value="字数: 0")
+        CTkLabel(chapter_frame, textvariable=self.word_count_var,
+                 font=CTkFont(size=12)).pack(side="right")
+
+        # 写作区域
+        self.writing_text = CTkTextbox(self.tabview.tab("写作"),
+                                        font=CTkFont(size=14),
+                                        corner_radius=10)
+        self.writing_text.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # 绑定字数统计
+        self.writing_text.bind("<KeyRelease>", lambda _: self.update_word_count())
+
+    def create_outline_tab(self):
+        """创建大纲标签页"""
+        self.tabview.add("大纲")
+
+        # 工具栏
+        toolbar = CTkFrame(self.tabview.tab("大纲"), fg_color="transparent")
+        toolbar.pack(fill="x", padx=10, pady=(10, 5))
+
+        CTkButton(toolbar, text="生成总大纲", command=self.generate_outline,
+                  width=120, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="生成卷大纲", command=self.generate_volume_outline,
+                  width=120, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="保存大纲", command=self.save_outline,
+                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+
+        # 大纲显示区域
+        self.outline_text = CTkTextbox(self.tabview.tab("大纲"),
+                                        font=CTkFont(size=13),
+                                        corner_radius=10)
+        self.outline_text.pack(fill="both", expand=True, padx=10, pady=10)
+
+    def create_terminal_tab(self):
+        """创建终端标签页"""
+        self.tabview.add("终端")
+
+        # 命令输入区域
+        input_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        input_frame.pack(fill="x", padx=10, pady=(10, 5))
+
+        CTkLabel(input_frame, text="Claude Code:").pack(side="left", padx=(0, 10))
+
+        self.command_var = ctk.StringVar(value="/novel-write ")
+        self.command_entry = CTkEntry(input_frame, textvariable=self.command_var,
+                                       height=40, corner_radius=10)
+        self.command_entry.pack(side="left", fill="x", expand=True, padx=5)
+        self.command_entry.bind("<Return>", lambda _: self.execute_command())
+
+        CTkButton(input_frame, text="执行", command=self.execute_command,
+                  width=80, height=40, corner_radius=10).pack(side="left", padx=5)
+        CTkButton(input_frame, text="停止", command=self.stop_command,
+                  width=80, height=40, corner_radius=10,
+                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
+
+        # 回复输入区域（用于回答 Claude 的问题）
+        reply_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        reply_frame.pack(fill="x", padx=10, pady=5)
+
+        CTkLabel(reply_frame, text="回复:").pack(side="left", padx=(0, 10))
+
+        self.reply_var = ctk.StringVar()
+        self.reply_entry = CTkEntry(reply_frame, textvariable=self.reply_var,
+                                     height=40, corner_radius=10)
+        self.reply_entry.pack(side="left", fill="x", expand=True, padx=5)
+        self.reply_entry.bind("<Return>", lambda _: self.send_reply())
+
+        CTkButton(reply_frame, text="发送", command=self.send_reply,
+                  width=80, height=40, corner_radius=10).pack(side="left", padx=5)
+
+        # 快捷命令
+        quick_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        quick_frame.pack(fill="x", padx=10, pady=5)
+
+        quick_commands = [
+            ("新建小说", "/novel-write 新建小说"),
+            ("生成大纲", "/novel-write 生成总大纲"),
+            ("规划章节", "/novel-write 规划第1章"),
+            ("写章节", "/novel-write 写第1章"),
+            ("续写", "/novel-write 继续写"),
+            ("审稿", "/novel-write 审稿"),
+            ("检查一致性", "/novel-write 检查一致性"),
+        ]
+
+        for text, command in quick_commands:
+            CTkButton(quick_frame, text=text, command=lambda cmd=command: self.run_quick_command(cmd),
+                      height=30, corner_radius=8, fg_color="transparent",
+                      border_width=1, text_color=("gray10", "gray90"),
+                      hover_color=("gray70", "gray30")).pack(side="left", padx=3)
+
+        # 终端输出区域（只读）
+        self.terminal_text = CTkTextbox(self.tabview.tab("终端"),
+                                         font=CTkFont(family="Consolas", size=12),
+                                         corner_radius=10, state="disabled")
+        self.terminal_text.pack(fill="both", expand=True, padx=10, pady=10)
+
+        # 清空按钮
+        CTkButton(self.tabview.tab("终端"), text="清空终端", command=self.clear_terminal,
+                  width=100, height=30, corner_radius=8,
+                  fg_color="transparent", border_width=1).pack(anchor="e", padx=10, pady=5)
+
+    def create_stats_tab(self):
+        """创建统计标签页"""
+        self.tabview.add("统计")
+
+        # 工具栏
+        toolbar = CTkFrame(self.tabview.tab("统计"), fg_color="transparent")
+        toolbar.pack(fill="x", padx=10, pady=(10, 5))
+
+        CTkButton(toolbar, text="刷新统计", command=self.refresh_stats,
+                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="导出报告", command=self.export_stats,
+                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+
+        # 统计信息显示
+        self.stats_text = CTkTextbox(self.tabview.tab("统计"),
+                                      font=CTkFont(size=13),
+                                      corner_radius=10)
+        self.stats_text.pack(fill="both", expand=True, padx=10, pady=10)
+
+    def create_status_bar(self):
+        """创建状态栏"""
+        status_frame = CTkFrame(self.root, height=35, corner_radius=0)
+        status_frame.pack(fill="x", side="bottom")
+
+        self.status_var = ctk.StringVar(value="就绪")
+        CTkLabel(status_frame, textvariable=self.status_var,
+                 font=CTkFont(size=12)).pack(side="left", padx=15)
+
+    def change_theme(self, mode):
+        """切换主题"""
+        if mode == "浅色":
+            ctk.set_appearance_mode("light")
+        elif mode == "深色":
+            ctk.set_appearance_mode("dark")
+        else:
+            ctk.set_appearance_mode("system")
+
+    # ==================== Claude Code 命令执行 ====================
+
+    def execute_command(self):
+        """直接调用 Claude Code CLI（保持会话上下文）"""
+        command = self.command_var.get().strip()
+        if not command:
+            return
+
+        self._terminal_write(f"\n{'='*60}\n")
+        self._terminal_write(f"执行命令: {command}\n")
+        self._terminal_write(f"{'='*60}\n\n")
+        self._cmd_start_time = time.time()
+        self._cmd_running = True
+        self._update_running_status("正在执行命令")
+
+        def _run():
+            try:
+                cwd = self.project_path if self.project_path else os.getcwd()
+
+                # 使用 -c 继续最近的对话
+                cmd = ["cmd.exe", "/c", "claude", "-p", command, "-c",
+                       "--allowedTools", "Write", "Edit"]
+
+                self.proc = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    cwd=cwd,
+                    encoding="utf-8",
+                    errors="replace",
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+                # 关闭 stdin 让 claude -p 收到 EOF 后直接执行
+                self.proc.stdin.close()
+                for line in self.proc.stdout:
+                    self.root.after(0, lambda l=line: self._append_terminal(l))
+                self.proc.wait()
+                self.root.after(0, self._command_done, self.proc.returncode)
+            except Exception as e:
+                self.root.after(0, self._command_error, str(e))
+
+        thread = threading.Thread(target=_run, daemon=True)
+        thread.start()
+
+    def stop_command(self):
+        """终止正在运行的命令"""
+        if self.proc and self.proc.poll() is None:
+            try:
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(self.proc.pid)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+                self._terminal_write("\n[已终止命令]\n")
+                self._cmd_running = False
+                self.update_status("命令已终止")
+            except Exception as e:
+                self._terminal_write(f"\n[终止失败: {e}]\n")
+        else:
+            self._terminal_write("\n[没有正在运行的命令]\n")
+
+    def _terminal_write(self, text):
+        """向只读终端写入文本"""
+        self.terminal_text.configure(state="normal")
+        self.terminal_text.insert("end", text)
+        self.terminal_text.see("end")
+        self.terminal_text.configure(state="disabled")
+
+    def _append_terminal(self, text):
+        """追加文本到终端"""
+        self._terminal_write(text)
+
+    def _command_done(self, returncode):
+        """命令执行完成"""
+        self._cmd_running = False
+        elapsed = time.time() - getattr(self, '_cmd_start_time', time.time())
+        elapsed_str = f"{elapsed:.1f}秒" if elapsed < 60 else f"{elapsed/60:.1f}分钟"
+        if returncode == 0:
+            self._terminal_write(f"\n[命令执行完成，耗时 {elapsed_str}]\n")
+            self.update_status(f"命令执行完成，耗时 {elapsed_str}")
+        else:
+            self._terminal_write(f"\n[命令执行失败，返回码: {returncode}，耗时 {elapsed_str}]\n")
+            self.update_status(f"命令执行失败，耗时 {elapsed_str}")
+        self._terminal_write(f"{'='*60}\n\n")
+        if self.project_path:
+            self.load_project_content()
+
+    def _command_error(self, error):
+        """命令执行出错"""
+        self._cmd_running = False
+        self._terminal_write(f"\n[错误] {error}\n")
+        self._terminal_write(f"{'='*60}\n\n")
+        self.update_status("命令执行出错")
+
+    def _update_running_status(self, prefix):
+        """更新运行中的状态栏显示（带动态点和耗时）"""
+        if not getattr(self, '_cmd_running', False):
+            return
+        elapsed = time.time() - self._cmd_start_time
+        dots = "." * (int(elapsed) % 4)
+        elapsed_str = f"{elapsed:.0f}秒" if elapsed < 60 else f"{elapsed/60:.1f}分钟"
+        self.update_status(f"{prefix}{dots} ({elapsed_str})")
+        self.root.after(1000, lambda: self._update_running_status(prefix))
+
+    def send_reply(self):
+        """发送回复给 Claude（继续对话）"""
+        reply = self.reply_var.get().strip()
+        if not reply:
+            return
+
+        self.reply_var.set("")
+        self._terminal_write(f"\n>>> {reply}\n\n")
+        self._cmd_start_time = time.time()
+        self._cmd_running = True
+        self._update_running_status("正在发送回复")
+
+        def _run():
+            try:
+                cwd = self.project_path if self.project_path else os.getcwd()
+                cmd = ["cmd.exe", "/c", "claude", "-p", reply, "-c",
+                       "--allowedTools", "Write", "Edit"]
+
+                self.proc = subprocess.Popen(
+                    cmd,
+                    stdin=subprocess.PIPE,
+                    stdout=subprocess.PIPE,
+                    stderr=subprocess.STDOUT,
+                    cwd=cwd,
+                    encoding="utf-8",
+                    errors="replace",
+                    creationflags=subprocess.CREATE_NO_WINDOW
+                )
+                # 关闭 stdin 让 claude -p 收到 EOF 后直接执行
+                self.proc.stdin.close()
+                for line in self.proc.stdout:
+                    self.root.after(0, lambda l=line: self._append_terminal(l))
+                self.proc.wait()
+                self.root.after(0, self._command_done, self.proc.returncode)
+            except Exception as e:
+                self.root.after(0, self._command_error, str(e))
+
+        thread = threading.Thread(target=_run, daemon=True)
+        thread.start()
+
+    def run_quick_command(self, command):
+        """运行快捷命令"""
+        self.command_var.set(command)
+        self.execute_command()
+
+    def clear_terminal(self):
+        """清空终端"""
+        self.terminal_text.configure(state="normal")
+        self.terminal_text.delete("1.0", "end")
+        self.terminal_text.configure(state="disabled")
+
+    # ==================== 项目管理功能 ====================
+
+    def new_project(self):
+        """新建项目"""
+        dialog = NewProjectDialog(self.root)
+        self.root.wait_window(dialog.top)
+
+        if dialog.result:
+            project_name = dialog.result['name']
+            project_type = dialog.result['type']
+            project_path = dialog.result['path']
+
+            full_path = os.path.join(project_path, project_name)
+            self.create_project_structure(full_path, project_name, dialog.result)
+
+            self.project_path = full_path
+            self.project_config = {
+                'name': project_name,
+                'type': project_type,
+                'platform': dialog.result.get('platform', '番茄小说'),
+                'pov': dialog.result.get('pov', '第三人称限制'),
+                'audience': dialog.result.get('audience', '男频'),
+                'hook': dialog.result.get('hook', ''),
+                'created': datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                'target_words': dialog.result.get('target_words', 2000000),
+                'target_chapters': dialog.result.get('target_chapters', 500),
+            }
+            self.save_project_config()
+
+            self.project_name_var.set(project_name)
+            self.project_type_var.set(f"类型: {project_type} | {dialog.result.get('platform', '')}")
+            self.update_status(f"项目 '{project_name}' 创建成功")
+
+            self.command_var.set(f"/novel-write 新建小说 --name {project_name} --type {project_type}")
+            self.execute_command()
+
+    def open_project(self):
+        """打开项目"""
+        from tkinter import filedialog
+        path = filedialog.askdirectory(title="选择项目目录")
+        if path:
+            config_file = os.path.join(path, 'project.json')
+            if os.path.exists(config_file):
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    self.project_config = json.load(f)
+                self.project_path = path
+                self.project_name_var.set(self.project_config.get('name', '未命名'))
+                self.project_type_var.set(f"类型: {self.project_config.get('type', '未知')}")
+                self.update_status(f"已打开项目: {self.project_config.get('name')}")
+                self.load_project_content()
+
+    def save_project(self):
+        """保存项目"""
+        if not self._check_project():
+            return
+
+        self.save_chapter()
+        self.save_project_config()
+        self.update_status("项目已保存")
+
+    def save_project_config(self):
+        """保存项目配置"""
+        if self.project_path:
+            config_file = os.path.join(self.project_path, 'project.json')
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(self.project_config, f, ensure_ascii=False, indent=2)
+
+    def create_project_structure(self, path, name, config):
+        """创建项目目录结构"""
+        directories = [
+            'worldbuilding',
+            'characters',
+            'outline/chapter-outs',
+            'chapters',
+            'style',
+            'notes',
+            'export',
+        ]
+
+        for dir_name in directories:
+            os.makedirs(os.path.join(path, dir_name), exist_ok=True)
+
+        self.create_initial_files(path, name, config)
+
+    def create_initial_files(self, path, name, config):
+        """创建初始文件"""
+        project_type = config.get('type', '玄幻/仙侠')
+        platform = config.get('platform', '番茄小说')
+        pov = config.get('pov', '第三人称限制')
+        audience = config.get('audience', '男频')
+        hook = config.get('hook', '')
+        target_words = config.get('target_words', 2000000)
+        target_chapters = config.get('target_chapters', 500)
+        created = datetime.now().strftime('%Y-%m-%d')
+
+        # project.md
+        project_md = f"""# {name} 项目总览
+
+## 基本信息
+- 小说名称：{name}
+- 类型/题材：{project_type}
+- 目标平台：{platform}
+- 叙事视角：{pov}
+- 目标读者：{audience}
+- 预计总字数：{target_words // 10000}万字
+- 预计章节数：{target_chapters}章
+- 核心卖点：{hook if hook else '（待填写）'}
+- 创建日期：{created}
+
+## 进度追踪
+| 章节 | 状态 | 字数 | 完成日期 |
+|------|------|------|----------|
+| ch001 | 待写 | - | - |
+"""
+        with open(os.path.join(path, 'project.md'), 'w', encoding='utf-8') as f:
+            f.write(project_md)
+
+        # worldbuilding/settings.md
+        settings_md = """# 世界观设定
+
+## 基础框架
+- 世界名称：
+- 时代背景：
+- 科技/文明水平：
+- 整体氛围/基调：
+
+## 地理与环境
+- 主要地域：
+- 重要地点：
+- 特殊环境：
+
+## 力量体系（如有）
+- 体系名称：
+- 等级划分：
+- 突破条件：
+- 特殊规则/限制：
+
+## 社会结构
+- 政治体系：
+- 主要势力/组织：
+- 经济体系：
+- 社会阶层：
+
+## 历史与文化
+- 重大历史事件：
+- 文化习俗：
+- 信仰/宗教：
+
+## 特殊设定
+- 独特规则：
+- 禁忌/禁区：
+"""
+        with open(os.path.join(path, 'worldbuilding', 'settings.md'), 'w', encoding='utf-8') as f:
+            f.write(settings_md)
+
+        # characters/index.md
+        index_md = """# 角色索引
+
+| 角色名 | 文件名 | 类型 | 首次出场 | 状态 |
+|--------|--------|------|----------|------|
+"""
+        with open(os.path.join(path, 'characters', 'index.md'), 'w', encoding='utf-8') as f:
+            f.write(index_md)
+
+        # style/style-config.md
+        style_md = f"""# 文风配置
+
+## 当前风格
+- 平台风格：{platform}
+- 叙事视角：{pov}
+- 时态：过去时
+- 目标读者：{audience}
+
+## 文风参数
+| 参数 | 设置 | 说明 |
+|------|------|------|
+| 句式偏好 | 短句为主 | 影响阅读节奏 |
+| 描写密度 | 适中 | 环境和心理描写的详细程度 |
+| 对话风格 | 口语化 | 角色对话的用词风格 |
+| 幽默程度 | 轻度 | 是否加入轻松元素 |
+| 虐心程度 | 微虐 | 情感上的虐心程度 |
+| 节奏偏好 | 快节奏 | 情节推进速度 |
+| 信息密度 | 中 | 每段包含的新信息量 |
+
+## 参考风格
+- 模仿作者：
+- 样章参考：
+
+## 禁忌项
+- 不使用的词汇/表达：
+- 避免的情节模式：
+"""
+        with open(os.path.join(path, 'style', 'style-config.md'), 'w', encoding='utf-8') as f:
+            f.write(style_md)
+
+        # notes/misc.md
+        notes_md = """# 杂项笔记
+
+## 伏笔追踪
+| ID | 伏笔内容 | 埋设章节 | 计划回收 | 实际回收 | 状态 |
+|----|----------|----------|----------|----------|------|
+
+## 待办事项
+
+## 灵感记录
+"""
+        with open(os.path.join(path, 'notes', 'misc.md'), 'w', encoding='utf-8') as f:
+            f.write(notes_md)
+
+    def load_project_content(self):
+        """加载项目内容"""
+        if not self._check_project():
+            return
+
+        self.load_outline()
+        self.refresh_stats()
+        self._load_chapter_list()
+
+    def _load_chapter_list(self):
+        """扫描 chapters 目录，动态更新章节选择器"""
+        chapters_dir = os.path.join(self.project_path, 'chapters')
+        if not os.path.exists(chapters_dir):
+            return
+        files = sorted([f for f in os.listdir(chapters_dir)
+                        if f.startswith('ch') and f.endswith('.md')])
+        chapters = [f"第{f[2:5]}章" for f in files]
+        if chapters:
+            self.chapter_menu.configure(values=chapters)
+            self.chapter_var.set(chapters[0])
+            self._on_chapter_selected(chapters[0])
+        else:
+            self.chapter_menu.configure(values=["暂无章节"])
+            self.chapter_var.set("暂无章节")
+
+    def _on_chapter_selected(self, choice):
+        """切换章节时自动加载内容"""
+        if not self.project_path or choice == "暂无章节":
+            return
+        num = choice.replace('第', '').replace('章', '')
+        path = os.path.join(self.project_path, 'chapters', f'ch{num}.md')
+        if os.path.exists(path):
+            with open(path, 'r', encoding='utf-8') as f:
+                content = f.read()
+            self.writing_text.delete("1.0", "end")
+            self.writing_text.insert("1.0", content)
+            self.update_word_count()
+
+    def load_outline(self):
+        """加载大纲"""
+        outline_file = os.path.join(self.project_path, 'outline', 'master-outline.md')
+        if os.path.exists(outline_file):
+            with open(outline_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            self.outline_text.delete("1.0", "end")
+            self.outline_text.insert("1.0", content)
+
+    # ==================== 项目检查 ====================
+
+    def _check_project(self):
+        """检查是否已打开项目，未打开时弹窗提示"""
+        if not self.project_path:
+            messagebox.showwarning("提示", "请先打开或新建项目")
+            return False
+        return True
+
+    # ==================== 大纲功能 ====================
+
+    def generate_outline(self):
+        """生成总大纲"""
+        if not self._check_project():
+            return
+        self.command_var.set("/novel-write 生成总大纲")
+        self.execute_command()
+        self.tabview.set("终端")
+
+    def generate_volume_outline(self):
+        """生成卷大纲"""
+        if not self._check_project():
+            return
+        dialog = CTkInputDialog(text="请输入卷数:", title="生成卷大纲")
+        volume = dialog.get_input()
+        if volume and volume.isdigit():
+            self.command_var.set(f"/novel-write 生成第{volume}卷大纲")
+            self.execute_command()
+            self.tabview.set("终端")
+
+    def save_outline(self):
+        """保存大纲"""
+        if not self._check_project():
+            return
+        outline_file = os.path.join(self.project_path, 'outline', 'master-outline.md')
+        content = self.outline_text.get("1.0", "end")
+        with open(outline_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+        self.update_status("大纲已保存")
+
+    # ==================== 章节功能 ====================
+
+    def write_chapter(self):
+        """写章节"""
+        if not self._check_project():
+            return
+        dialog = CTkInputDialog(text="请输入章节号:", title="写章节")
+        chapter = dialog.get_input()
+        if chapter and chapter.isdigit():
+            self.command_var.set(f"/novel-write 写第{chapter}章")
+            self.execute_command()
+            self.tabview.set("终端")
+
+    def continue_writing(self):
+        """续写"""
+        if not self._check_project():
+            return
+        self.command_var.set("/novel-write 继续写")
+        self.execute_command()
+        self.tabview.set("终端")
+
+    def plan_chapter(self):
+        """规划章节"""
+        if not self._check_project():
+            return
+        dialog = CTkInputDialog(text="请输入章节号:", title="规划章节")
+        chapter = dialog.get_input()
+        if chapter and chapter.isdigit():
+            self.command_var.set(f"/novel-write 规划第{chapter}章")
+            self.execute_command()
+            self.tabview.set("终端")
+
+    def save_chapter(self):
+        """保存章节"""
+        if not self._check_project():
+            return
+        chapter_name = self.chapter_var.get()
+        chapter_num = chapter_name.replace('第', '').replace('章', '')
+        chapter_file = os.path.join(self.project_path, 'chapters', f'ch{chapter_num.zfill(3)}.md')
+        content = self.writing_text.get("1.0", "end")
+        with open(chapter_file, 'w', encoding='utf-8') as f:
+            f.write(content)
+        self.update_status(f"章节 {chapter_name} 已保存")
+
+    # ==================== 人物功能 ====================
+
+    def view_characters(self):
+        """查看人物管理"""
+        if not self._check_project():
+            return
+        dialog = CharacterManagerDialog(self.root, self.project_path)
+        self.root.wait_window(dialog.top)
+
+    # ==================== 世界观功能 ====================
+
+    def edit_worldbuilding(self):
+        """编辑世界观"""
+        if not self._check_project():
+            return
+        settings_file = os.path.join(self.project_path, 'worldbuilding', 'settings.md')
+        if os.path.exists(settings_file):
+            with open(settings_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            dialog = EditDialog(self.root, "世界观设定", content)
+            self.root.wait_window(dialog.top)
+            if dialog.result:
+                with open(settings_file, 'w', encoding='utf-8') as f:
+                    f.write(dialog.result)
+                self.update_status("世界观设定已更新")
+
+    # ==================== 风格配置 ====================
+
+    def style_settings(self):
+        """风格配置"""
+        if not self._check_project():
+            return
+        style_file = os.path.join(self.project_path, 'style', 'style-config.md')
+        if os.path.exists(style_file):
+            with open(style_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            dialog = EditDialog(self.root, "风格配置", content)
+            self.root.wait_window(dialog.top)
+            if dialog.result:
+                with open(style_file, 'w', encoding='utf-8') as f:
+                    f.write(dialog.result)
+                self.update_status("风格配置已更新")
+
+    # ==================== 统计功能 ====================
+
+    def word_count(self):
+        """字数统计"""
+        if not self._check_project():
+            return 0
+        total_words = 0
+        chapters_dir = os.path.join(self.project_path, 'chapters')
+        if os.path.exists(chapters_dir):
+            for file_name in os.listdir(chapters_dir):
+                if file_name.endswith('.md'):
+                    with open(os.path.join(chapters_dir, file_name), 'r', encoding='utf-8') as f:
+                        content = f.read()
+                        chinese_chars = len([c for c in content if '一' <= c <= '鿿'])
+                        total_words += chinese_chars
+        return total_words
+
+    def count_words(self):
+        """统计当前章节字数"""
+        content = self.writing_text.get("1.0", "end")
+        chinese_chars = len([c for c in content if '一' <= c <= '鿿'])
+        self.word_count_var.set(f"字数: {chinese_chars}")
+
+    def update_word_count(self, _=None):
+        """更新字数统计"""
+        self.count_words()
+
+    def refresh_stats(self):
+        """刷新统计信息"""
+        if not self._check_project():
+            return
+
+        self.stats_text.delete("1.0", "end")
+
+        chapters_count = 0
+        chapters_dir = os.path.join(self.project_path, 'chapters')
+        chapter_files = []
+        if os.path.exists(chapters_dir):
+            chapter_files = sorted([f for f in os.listdir(chapters_dir) if f.endswith('.md')])
+            chapters_count = len(chapter_files)
+
+        total_words = self.word_count()
+
+        stats = f"""# 写作统计报告
+
+## 项目信息
+- 项目名称：{self.project_config.get('name', '未命名')}
+- 项目类型：{self.project_config.get('type', '未知')}
+- 创建时间：{self.project_config.get('created', '未知')}
+
+## 字数统计
+- 总字数：{total_words} 字
+- 章节数：{chapters_count} 章
+- 平均每章：{total_words // chapters_count if chapters_count else 0} 字
+
+## 进度追踪
+- 已完成章节：{chapters_count} 章
+- 目标字数：{self.project_config.get('target_words', 0)} 字
+- 完成进度：{total_words / self.project_config.get('target_words', 1) * 100:.1f}%
+
+## 章节列表
+{chr(10).join(f'- {f.replace(".md", "")}' for f in chapter_files) if chapter_files else '暂无章节'}
+
+## 最近更新
+- 最后保存时间：{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+"""
+        self.stats_text.insert("1.0", stats)
+
+    def export_stats(self):
+        """导出统计报告"""
+        if not self._check_project():
+            return
+        from tkinter import filedialog
+        file_path = filedialog.asksaveasfilename(
+            title="导出统计报告",
+            defaultextension=".md",
+            filetypes=[("Markdown文件", "*.md"), ("所有文件", "*.*")]
+        )
+        if file_path:
+            content = self.stats_text.get("1.0", "end")
+            with open(file_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            self.update_status(f"统计报告已导出")
+
+    def word_stats(self):
+        """字数统计"""
+        self.refresh_stats()
+        self.tabview.set("统计")
+
+    # ==================== 导出功能 ====================
+
+    def export_novel(self):
+        """导出合并所有章节为可发布文件"""
+        if not self._check_project():
+            return
+
+        chapters_dir = os.path.join(self.project_path, 'chapters')
+        if not os.path.exists(chapters_dir):
+            messagebox.showwarning("提示", "没有找到章节目录")
+            return
+
+        files = sorted([f for f in os.listdir(chapters_dir)
+                        if f.startswith('ch') and f.endswith('.md')])
+        if not files:
+            messagebox.showwarning("提示", "没有找到章节文件")
+            return
+
+        export_dir = os.path.join(self.project_path, 'export')
+        os.makedirs(export_dir, exist_ok=True)
+
+        project_name = self.project_config.get('name', '未命名')
+        export_file = os.path.join(export_dir, f'{project_name}_全文.md')
+
+        total_chars = 0
+        with open(export_file, 'w', encoding='utf-8') as out:
+            out.write(f"# {project_name}\n\n")
+            for f in files:
+                filepath = os.path.join(chapters_dir, f)
+                with open(filepath, 'r', encoding='utf-8') as fh:
+                    content = fh.read()
+                # 去除 HTML 元数据注释
+                content = re.sub(r'<!--.*?-->', '', content, flags=re.DOTALL)
+                content = content.strip()
+                if content:
+                    out.write(content + "\n\n---\n\n")
+                    chinese_chars = len([c for c in content if '一' <= c <= '鿿'])
+                    total_chars += chinese_chars
+
+        self._terminal_write(f"\n[导出完成] {export_file}\n")
+        self._terminal_write(f"[共 {len(files)} 章，{total_chars} 字]\n")
+        self.update_status(f"导出完成：{len(files)} 章，{total_chars} 字")
+        messagebox.showinfo("导出成功",
+                            f"已导出 {len(files)} 章，共 {total_chars} 字\n\n"
+                            f"文件位置：{export_file}")
+
+    # ==================== 辅助功能 ====================
+
+    def review_chapter(self):
+        """审稿"""
+        if not self._check_project():
+            return
+        self.command_var.set("/novel-write 审稿")
+        self.execute_command()
+        self.tabview.set("终端")
+
+    def polish_chapter(self):
+        """润色"""
+        if not self._check_project():
+            return
+        self.command_var.set("/novel-write 润色")
+        self.execute_command()
+        self.tabview.set("终端")
+
+    def update_status(self, message):
+        """更新状态栏"""
+        self.status_var.set(message)
+        self.root.update_idletasks()
+
+    def on_closing(self):
+        """窗口关闭时终止子进程（含子进程树）"""
+        self._cmd_running = False
+        if self.proc and self.proc.poll() is None:
+            try:
+                # 杀掉整个进程树（cmd.exe → claude → node）
+                subprocess.run(
+                    ["taskkill", "/F", "/T", "/PID", str(self.proc.pid)],
+                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                )
+            except:
+                pass
+        self.root.destroy()
+
+    def run(self):
+        """运行应用"""
+        self.root.mainloop()
+
+
+class CTkInputDialog:
+    """现代风格输入对话框"""
+
+    def __init__(self, parent=None, text="输入:", title="输入"):
+        self.top = CTkToplevel(parent)
+        self.top.title(title)
+        self.top.geometry("350x180")
+        self.top.transient(parent)
+        self.top.grab_set()
+
+        self.result = None
+
+        CTkLabel(self.top, text=text, font=CTkFont(size=14)).pack(pady=(20, 10))
+
+        self.entry = CTkEntry(self.top, width=280, height=40, corner_radius=10)
+        self.entry.pack(pady=10)
+        self.entry.focus_set()
+
+        button_frame = CTkFrame(self.top, fg_color="transparent")
+        button_frame.pack(pady=10)
+
+        CTkButton(button_frame, text="确定", command=self.ok,
+                  width=100, height=35, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="取消", command=self.cancel,
+                  width=100, height=35, corner_radius=10,
+                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+
+        self.entry.bind("<Return>", lambda _: self.ok())
+
+    def ok(self):
+        self.result = self.entry.get()
+        self.top.destroy()
+
+    def cancel(self):
+        self.top.destroy()
+
+    def get_input(self):
+        self.top.wait_window()
+        return self.result
+
+
+class NewProjectDialog:
+    """新建项目对话框"""
+
+    def __init__(self, parent):
+        self.top = CTkToplevel(parent)
+        self.top.title("新建项目")
+        self.top.geometry("480x650")
+        self.top.transient(parent)
+        self.top.grab_set()
+
+        self.result = None
+
+        # 可滚动容器
+        scroll = CTkScrollableFrame(self.top, fg_color="transparent")
+        scroll.pack(fill="both", expand=True, padx=10, pady=10)
+
+        CTkLabel(scroll, text="新建小说项目",
+                 font=CTkFont(size=20, weight="bold")).pack(pady=(10, 15))
+
+        # 项目名称
+        CTkLabel(scroll, text="项目名称:").pack(anchor="w", padx=20)
+        self.name_var = ctk.StringVar()
+        CTkEntry(scroll, textvariable=self.name_var, width=400, height=36,
+                 corner_radius=10).pack(padx=20, pady=(0, 8))
+
+        # 项目类型
+        CTkLabel(scroll, text="项目类型:").pack(anchor="w", padx=20)
+        self.type_var = ctk.StringVar(value="玄幻/仙侠")
+        CTkOptionMenu(scroll, values=["玄幻/仙侠", "都市/现实", "科幻/未来", "历史/架空", "悬疑/推理", "言情/耽美"],
+                      variable=self.type_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+
+        # 目标平台
+        CTkLabel(scroll, text="目标平台:").pack(anchor="w", padx=20)
+        self.platform_var = ctk.StringVar(value="番茄小说")
+        CTkOptionMenu(scroll, values=["番茄小说", "起点中文网", "晋江文学城", "纵横中文网", "飞卢小说", "其他"],
+                      variable=self.platform_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+
+        # 叙事视角
+        CTkLabel(scroll, text="叙事视角:").pack(anchor="w", padx=20)
+        self.pov_var = ctk.StringVar(value="第三人称限制")
+        CTkOptionMenu(scroll, values=["第三人称限制", "第三人称全知", "第一人称", "多视角切换"],
+                      variable=self.pov_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+
+        # 目标字数
+        CTkLabel(scroll, text="目标字数（万字）:").pack(anchor="w", padx=20)
+        self.words_var = ctk.StringVar(value="200")
+        CTkEntry(scroll, textvariable=self.words_var, width=400, height=36,
+                 corner_radius=10).pack(padx=20, pady=(0, 8))
+
+        # 预计章节数
+        CTkLabel(scroll, text="预计章节数:").pack(anchor="w", padx=20)
+        self.chapters_var = ctk.StringVar(value="500")
+        CTkEntry(scroll, textvariable=self.chapters_var, width=400, height=36,
+                 corner_radius=10).pack(padx=20, pady=(0, 8))
+
+        # 目标读者
+        CTkLabel(scroll, text="目标读者:").pack(anchor="w", padx=20)
+        self.audience_var = ctk.StringVar(value="男频")
+        CTkOptionMenu(scroll, values=["男频", "女频", "全年龄"],
+                      variable=self.audience_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+
+        # 核心卖点
+        CTkLabel(scroll, text="核心卖点（一句话简介）:").pack(anchor="w", padx=20)
+        self.hook_var = ctk.StringVar()
+        CTkEntry(scroll, textvariable=self.hook_var, width=400, height=36,
+                 corner_radius=10).pack(padx=20, pady=(0, 8))
+
+        # 按钮
+        button_frame = CTkFrame(self.top, fg_color="transparent")
+        button_frame.pack(pady=15)
+
+        CTkButton(button_frame, text="创建项目", command=self.ok,
+                  width=120, height=40, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="取消", command=self.cancel,
+                  width=120, height=40, corner_radius=10,
+                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+
+    def ok(self):
+        if not self.name_var.get():
+            return
+
+        self.result = {
+            'name': self.name_var.get(),
+            'type': self.type_var.get(),
+            'platform': self.platform_var.get(),
+            'pov': self.pov_var.get(),
+            'target_words': int(self.words_var.get()) * 10000,
+            'target_chapters': int(self.chapters_var.get()),
+            'audience': self.audience_var.get(),
+            'hook': self.hook_var.get(),
+            'path': os.getcwd(),
+        }
+        self.top.destroy()
+
+    def cancel(self):
+        self.top.destroy()
+
+
+class CharacterManagerDialog:
+    """人物管理对话框"""
+
+    def __init__(self, parent, project_path):
+        self.top = CTkToplevel(parent)
+        self.top.title("人物管理")
+        self.top.geometry("700x500")
+        self.top.transient(parent)
+        self.top.grab_set()
+
+        self.project_path = project_path
+
+        # 工具栏
+        toolbar = CTkFrame(self.top, fg_color="transparent")
+        toolbar.pack(fill="x", padx=15, pady=(15, 10))
+
+        CTkButton(toolbar, text="新建角色", command=self.new_character,
+                  width=100, height=35, corner_radius=10).pack(side="left", padx=5)
+        CTkButton(toolbar, text="编辑角色", command=self.edit_character,
+                  width=100, height=35, corner_radius=10).pack(side="left", padx=5)
+        CTkButton(toolbar, text="删除角色", command=self.delete_character,
+                  width=100, height=35, corner_radius=10,
+                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
+
+        # 角色列表
+        self.character_list = CTkTextbox(self.top, font=CTkFont(size=13), corner_radius=10)
+        self.character_list.pack(fill="both", expand=True, padx=15, pady=10)
+
+        # 加载角色列表
+        self.load_characters()
+
+    def load_characters(self):
+        """加载角色列表"""
+        self.character_list.delete("1.0", "end")
+
+        characters_dir = os.path.join(self.project_path, 'characters')
+        if os.path.exists(characters_dir):
+            files = [f for f in os.listdir(characters_dir) if f.endswith('.md') and f != 'index.md']
+
+            if files:
+                self.character_list.insert("end", "角色列表:\n\n")
+                for i, file_name in enumerate(files, 1):
+                    char_name = file_name.replace('.md', '')
+                    self.character_list.insert("end", f"{i}. {char_name}\n")
+            else:
+                self.character_list.insert("end", "暂无角色，点击'新建角色'创建。")
+
+    def new_character(self):
+        """新建角色"""
+        dialog = CTkInputDialog(parent=self.top, text="请输入角色名称:", title="新建角色")
+        name = dialog.get_input()
+        if name:
+            char_file = os.path.join(self.project_path, 'characters', f'{name}.md')
+            char_md = f"""# {name} 设定卡
+
+## 基本信息
+- 姓名：{name}
+- 别名/称号：
+- 年龄：
+- 性别：
+- 外貌特征：
+
+## 性格画像
+- 核心性格：
+- 说话特点：
+- 行为习惯：
+
+## 背景故事
+- 出身：
+- 经历：
+- 当前状态：
+
+## 能力体系
+- 战斗能力：
+- 特殊能力/技能：
+- 弱点/短板：
+
+## 人物关系
+| 角色名 | 关系 | 当前状态 | 发展方向 |
+|--------|------|----------|----------|
+
+## 角色弧线
+- 起点状态：
+- 转折事件：
+- 终点状态：
+"""
+            with open(char_file, 'w', encoding='utf-8') as f:
+                f.write(char_md)
+
+            self.load_characters()
+
+    def edit_character(self):
+        """编辑角色"""
+        dialog = CTkInputDialog(parent=self.top, text="请输入要编辑的角色名称:", title="编辑角色")
+        name = dialog.get_input()
+        if name:
+            char_file = os.path.join(self.project_path, 'characters', f'{name}.md')
+            if os.path.exists(char_file):
+                with open(char_file, 'r', encoding='utf-8') as f:
+                    content = f.read()
+
+                edit_dialog = EditDialog(self.top, f"编辑角色: {name}", content)
+                self.top.wait_window(edit_dialog.top)
+
+                if edit_dialog.result:
+                    with open(char_file, 'w', encoding='utf-8') as f:
+                        f.write(edit_dialog.result)
+                    self.load_characters()
+
+    def delete_character(self):
+        """删除角色"""
+        dialog = CTkInputDialog(parent=self.top, text="请输入要删除的角色名称:", title="删除角色")
+        name = dialog.get_input()
+        if name:
+            char_file = os.path.join(self.project_path, 'characters', f'{name}.md')
+            if os.path.exists(char_file):
+                os.remove(char_file)
+                self.load_characters()
+
+
+class EditDialog:
+    """编辑对话框"""
+
+    def __init__(self, parent, title, content):
+        self.top = CTkToplevel(parent)
+        self.top.title(title)
+        self.top.geometry("700x550")
+        self.top.transient(parent)
+        self.top.grab_set()
+
+        self.result = None
+
+        # 文本编辑区域
+        self.text = CTkTextbox(self.top, font=CTkFont(size=13), corner_radius=10)
+        self.text.pack(fill="both", expand=True, padx=15, pady=15)
+        self.text.insert("1.0", content)
+
+        # 按钮
+        button_frame = CTkFrame(self.top, fg_color="transparent")
+        button_frame.pack(pady=10)
+
+        CTkButton(button_frame, text="保存", command=self.ok,
+                  width=100, height=40, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="取消", command=self.cancel,
+                  width=100, height=40, corner_radius=10,
+                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+
+    def ok(self):
+        self.result = self.text.get("1.0", "end")
+        self.top.destroy()
+
+    def cancel(self):
+        self.top.destroy()
+
+
+def main():
+    """主函数"""
+    app = ModernNovelWriterApp()
+    app.run()
+
+
+if __name__ == '__main__':
+    main()

@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "Read(//c/Users/Shmily/.claude/**)",
+      "PowerShell(Get-ChildItem -Path \"$env:USERPROFILE\\\\.claude\" -Force -ErrorAction SilentlyContinue)",
+      "PowerShell(Get-ChildItem -Path \"C:\\\\Users\\\\Shmily\\\\.claude\" -Recurse -Force -File | Where-Object { $_.Name -match \"skill\" } | Select-Object -First 20)",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Read(//c/Users/Shmily/**)",
+      "PowerShell(Get-ChildItem -Path \"$env:USERPROFILE\\\\.codex\\\\skills\" -Recurse -ErrorAction SilentlyContinue | Select-Object FullName, Length)",
+      "Read(//d/Desktop/test_claude/**)"
+    ],
+    "additionalDirectories": [
+      "d:\\Desktop\\test_claude\\novel_write\\.claude\\skills\\novel-write"
+    ]
+  }
+}
