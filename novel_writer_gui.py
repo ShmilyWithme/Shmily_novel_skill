@@ -33,7 +33,7 @@ from customtkinter import (
 
 
 # 设置主题
-ctk.set_appearance_mode("dark")
+ctk.set_appearance_mode("light")
 ctk.set_default_color_theme("blue")
 
 
@@ -235,7 +235,7 @@ class ModernNovelWriterApp:
         header_frame.pack(fill="x", padx=15, pady=(20, 10))
 
         CTkLabel(header_frame, text="网文写作助手",
-                 font=FONT_TITLE).pack(anchor="w")
+                 font=FONT_TITLE, text_color=COLORS["text_primary"]).pack(anchor="w")
         CTkLabel(header_frame, text="Claude Code 集成版",
                  font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(anchor="w")
 
@@ -255,7 +255,7 @@ class ModernNovelWriterApp:
         CTkLabel(card, text="当前项目",
                  font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(anchor="w", padx=15, pady=(15, 0))
         CTkLabel(card, textvariable=self.project_name_var,
-                 font=CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(0, 5))
+                 font=CTkFont(size=16, weight="bold"), text_color=COLORS["text_primary"]).pack(anchor="w", padx=15, pady=(0, 5))
 
         # 项目类型
         self.project_type_var = ctk.StringVar(value="")
@@ -267,7 +267,7 @@ class ModernNovelWriterApp:
         # 项目操作
         CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="项目操作",
-                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
+                 font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         project_buttons = [
             ("📄 新建小说", self.new_project),
@@ -283,12 +283,12 @@ class ModernNovelWriterApp:
         # AI 功能
         CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="AI 功能",
-                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
+                 font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         ai_buttons = [
             ("📋 生成总大纲", self.generate_outline),
             ("📝 规划章节", self.plan_chapter),
-            ("✍️ 写章节", self.write_chapter),
+            ("✏️ 写章节", self.write_chapter),
             ("📖 续写", self.continue_writing),
             ("🔍 审稿", self.review_chapter),
             ("💎 润色", self.polish_chapter),
@@ -302,7 +302,7 @@ class ModernNovelWriterApp:
         # 管理功能
         CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="管理功能",
-                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
+                 font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         manage_buttons = [
             ("👤 人物管理", self.view_characters),
@@ -321,9 +321,9 @@ class ModernNovelWriterApp:
         theme_frame = CTkFrame(self.left_scroll, fg_color="transparent")
         theme_frame.pack(fill="x", padx=15, pady=(20, 15))
 
-        CTkLabel(theme_frame, text="外观模式:").pack(side="left", padx=(0, 10))
+        CTkLabel(theme_frame, text="外观模式:", text_color=COLORS["text_primary"]).pack(side="left", padx=(0, 10))
 
-        self.theme_var = ctk.StringVar(value="dark")
+        self.theme_var = ctk.StringVar(value="浅色")
         theme_menu = CTkOptionMenu(theme_frame, values=["浅色", "深色", "系统"],
                                     variable=self.theme_var, command=self.change_theme,
                                     width=120)
@@ -332,7 +332,7 @@ class ModernNovelWriterApp:
         # 授权信息
         CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="授权信息",
-                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
+                 font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         CTkButton(self.left_scroll, text="🔑 查看授权状态", command=self.show_license_info,
                   anchor="w", **btn_outline()).pack(fill="x", padx=15, pady=2)
