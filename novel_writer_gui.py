@@ -357,6 +357,22 @@ class ModernNovelWriterApp:
         CTkButton(reply_frame, text="发送", command=self.send_reply,
                   width=80, height=40, corner_radius=10).pack(side="left", padx=5)
 
+        # 授权按钮区域
+        auth_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        auth_frame.pack(fill="x", padx=10, pady=5)
+
+        CTkLabel(auth_frame, text="授权操作:").pack(side="left", padx=(0, 10))
+
+        CTkButton(auth_frame, text="✅ 允许 (y)", command=lambda: self.send_auth("y"),
+                  width=100, height=35, corner_radius=10,
+                  fg_color="green", hover_color="darkgreen").pack(side="left", padx=5)
+        CTkButton(auth_frame, text="❌ 拒绝 (n)", command=lambda: self.send_auth("n"),
+                  width=100, height=35, corner_radius=10,
+                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
+        CTkButton(auth_frame, text="全部允许 (a)", command=lambda: self.send_auth("a"),
+                  width=100, height=35, corner_radius=10,
+                  fg_color="blue", hover_color="darkblue").pack(side="left", padx=5)
+
         # 终端输出区域（只读）
         self.terminal_text = CTkTextbox(self.tabview.tab("终端"),
                                          font=CTkFont(family="Consolas", size=12),
@@ -466,8 +482,7 @@ class ModernNovelWriterApp:
                     errors="replace",
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
-                # 关闭 stdin 让 claude -p 收到 EOF 后直接执行
-                self.proc.stdin.close()
+                # 保持 stdin 打开，以便发送授权响应
                 for line in self.proc.stdout:
                     self.root.after(0, lambda l=line: self._append_terminal(l))
                 self.proc.wait()
@@ -491,6 +506,18 @@ class ModernNovelWriterApp:
                 self.update_status("命令已终止")
             except Exception as e:
                 self._terminal_write(f"\n[终止失败: {e}]\n")
+        else:
+            self._terminal_write("\n[没有正在运行的命令]\n")
+
+    def send_auth(self, key):
+        """向 Claude Code 发送授权确认"""
+        if self.proc and self.proc.poll() is None:
+            try:
+                self.proc.stdin.write(key + "\n")
+                self.proc.stdin.flush()
+                self._terminal_write(f"\n[已发送授权: {key}]\n")
+            except Exception as e:
+                self._terminal_write(f"\n[发送授权失败: {e}]\n")
         else:
             self._terminal_write("\n[没有正在运行的命令]\n")
 
@@ -589,8 +616,7 @@ class ModernNovelWriterApp:
                     errors="replace",
                     creationflags=subprocess.CREATE_NO_WINDOW
                 )
-                # 关闭 stdin 让 claude -p 收到 EOF 后直接执行
-                self.proc.stdin.close()
+                # 保持 stdin 打开，以便发送授权响应
                 for line in self.proc.stdout:
                     self.root.after(0, lambda l=line: self._append_terminal(l))
                 self.proc.wait()
