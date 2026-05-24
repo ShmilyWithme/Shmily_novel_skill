@@ -270,9 +270,9 @@ class ModernNovelWriterApp:
                  font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         project_buttons = [
-            ("📄 新建小说", self.new_project),
-            ("📂 打开项目", self.open_project),
-            ("💾 保存项目", self.save_project),
+            ("新建小说", self.new_project),
+            ("打开项目", self.open_project),
+            ("保存项目", self.save_project),
         ]
 
         for text, command in project_buttons:
@@ -286,12 +286,12 @@ class ModernNovelWriterApp:
                  font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         ai_buttons = [
-            ("📋 生成总大纲", self.generate_outline),
-            ("📝 规划章节", self.plan_chapter),
-            ("✏️ 写章节", self.write_chapter),
-            ("📖 续写", self.continue_writing),
-            ("🔍 审稿", self.review_chapter),
-            ("💎 润色", self.polish_chapter),
+            ("生成总大纲", self.generate_outline),
+            ("规划章节", self.plan_chapter),
+            ("写章节", self.write_chapter),
+            ("续写", self.continue_writing),
+            ("审稿", self.review_chapter),
+            ("润色", self.polish_chapter),
         ]
 
         for text, command in ai_buttons:
@@ -305,11 +305,11 @@ class ModernNovelWriterApp:
                  font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
         manage_buttons = [
-            ("👤 人物管理", self.view_characters),
-            ("🌍 世界观设定", self.edit_worldbuilding),
-            ("🎨 风格配置", self.style_settings),
-            ("📊 统计分析", self.word_stats),
-            ("📤 导出小说", self.export_novel),
+            ("人物管理", self.view_characters),
+            ("世界观设定", self.edit_worldbuilding),
+            ("风格配置", self.style_settings),
+            ("统计分析", self.word_stats),
+            ("导出小说", self.export_novel),
         ]
 
         for text, command in manage_buttons:
@@ -334,7 +334,7 @@ class ModernNovelWriterApp:
         CTkLabel(self.left_scroll, text="授权信息",
                  font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
 
-        CTkButton(self.left_scroll, text="🔑 查看授权状态", command=self.show_license_info,
+        CTkButton(self.left_scroll, text="查看授权状态", command=self.show_license_info,
                   anchor="w", **btn_outline()).pack(fill="x", padx=15, pady=2)
 
     def create_right_panel(self):
@@ -365,9 +365,9 @@ class ModernNovelWriterApp:
         toolbar = CTkFrame(self.tabview.tab("写作"), fg_color="transparent")
         toolbar.pack(fill="x", padx=10, pady=(10, 5))
 
-        CTkButton(toolbar, text="💾 保存章节", command=self.save_chapter,
+        CTkButton(toolbar, text="保存章节", command=self.save_chapter,
                   width=110, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(toolbar, text="📊 字数统计", command=self.count_words,
+        CTkButton(toolbar, text="字数统计", command=self.count_words,
                   width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 章节选择
@@ -405,11 +405,11 @@ class ModernNovelWriterApp:
         toolbar = CTkFrame(self.tabview.tab("大纲"), fg_color="transparent")
         toolbar.pack(fill="x", padx=10, pady=(10, 5))
 
-        CTkButton(toolbar, text="📋 生成总大纲", command=self.generate_outline,
+        CTkButton(toolbar, text="生成总大纲", command=self.generate_outline,
                   width=130, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(toolbar, text="📝 生成卷大纲", command=self.generate_volume_outline,
+        CTkButton(toolbar, text="生成卷大纲", command=self.generate_volume_outline,
                   width=130, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(toolbar, text="💾 保存大纲", command=self.save_outline,
+        CTkButton(toolbar, text="保存大纲", command=self.save_outline,
                   width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 大纲选择区域
@@ -465,9 +465,9 @@ class ModernNovelWriterApp:
         self.command_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.command_entry.bind("<Return>", lambda _: self.execute_command())
 
-        CTkButton(input_frame, text="▶ 执行", command=self.execute_command,
+        CTkButton(input_frame, text="执行", command=self.execute_command,
                   width=90, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(input_frame, text="⏹ 停止", command=self.stop_command,
+        CTkButton(input_frame, text="停止", command=self.stop_command,
                   width=90, **btn_danger()).pack(side="left", padx=5)
 
         # 回复输入区域
@@ -484,7 +484,7 @@ class ModernNovelWriterApp:
         self.reply_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.reply_entry.bind("<Return>", lambda _: self.send_reply())
 
-        CTkButton(reply_frame, text="📤 发送", command=self.send_reply,
+        CTkButton(reply_frame, text="发送", command=self.send_reply,
                   width=90, **btn_primary()).pack(side="left", padx=5)
 
         # 授权按钮区域
@@ -493,11 +493,11 @@ class ModernNovelWriterApp:
 
         CTkLabel(auth_frame, text="授权操作:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
 
-        CTkButton(auth_frame, text="✅ 允许 (y)", command=lambda: self.send_auth("y"),
+        CTkButton(auth_frame, text="允许 (y)", command=lambda: self.send_auth("y"),
                   width=110, **btn_success()).pack(side="left", padx=5)
-        CTkButton(auth_frame, text="❌ 拒绝 (n)", command=lambda: self.send_auth("n"),
+        CTkButton(auth_frame, text="拒绝 (n)", command=lambda: self.send_auth("n"),
                   width=110, **btn_danger()).pack(side="left", padx=5)
-        CTkButton(auth_frame, text="🔓 全部允许 (a)", command=lambda: self.send_auth("a"),
+        CTkButton(auth_frame, text="全部允许 (a)", command=lambda: self.send_auth("a"),
                   width=130, **btn_info()).pack(side="left", padx=5)
 
         # 终端输出区域
@@ -511,7 +511,7 @@ class ModernNovelWriterApp:
         self.terminal_text.pack(fill="both", expand=True, padx=10, pady=10)
 
         # 清空按钮
-        CTkButton(self.tabview.tab("终端"), text="🗑 清空终端", command=self.clear_terminal,
+        CTkButton(self.tabview.tab("终端"), text="清空终端", command=self.clear_terminal,
                   width=110, **btn_ghost()).pack(anchor="e", padx=10, pady=5)
 
         # 绑定输入框聚焦高亮
@@ -537,7 +537,7 @@ class ModernNovelWriterApp:
 
         CTkButton(toolbar, text="🔄 刷新统计", command=self.refresh_stats,
                   width=110, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(toolbar, text="📤 导出报告", command=self.export_stats,
+        CTkButton(toolbar, text="导出报告", command=self.export_stats,
                   width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 统计信息显示
@@ -751,7 +751,7 @@ class ModernNovelWriterApp:
         self._terminal_write(f"\n[错误] {error}\n")
         self._terminal_write(f"{'='*60}\n\n")
         self.update_status("命令执行出错")
-        self.progress_label.configure(text="❌ 出错")
+        self.progress_label.configure(text="出错")
         self.progress_frame.configure(fg_color=COLORS["status_error"])
 
         # 3秒后恢复就绪状态
@@ -1440,7 +1440,7 @@ class CTkInputDialog:
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=10)
 
-        CTkButton(button_frame, text="✅ 确定", command=self.ok,
+        CTkButton(button_frame, text="确定", command=self.ok,
                   width=100, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
                   width=100, **btn_ghost(height=BTN_HEIGHT_MD)).pack(side="left", padx=10)
@@ -1475,7 +1475,7 @@ class NewProjectDialog:
         scroll = CTkScrollableFrame(self.top, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=10)
 
-        CTkLabel(scroll, text="📄 新建小说项目",
+        CTkLabel(scroll, text="新建小说项目",
                  font=("Microsoft YaHei UI", 20, "bold"), text_color=COLORS["text_primary"]).pack(pady=(10, 15))
 
         # 项目名称
@@ -1534,7 +1534,7 @@ class NewProjectDialog:
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=15)
 
-        CTkButton(button_frame, text="✅ 创建项目", command=self.ok,
+        CTkButton(button_frame, text="创建项目", command=self.ok,
                   width=130, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
                   width=100, **btn_ghost(height=BTN_HEIGHT_LG)).pack(side="left", padx=10)
@@ -1580,7 +1580,7 @@ class CharacterManagerDialog:
                   width=110, **btn_primary()).pack(side="left", padx=5)
         CTkButton(toolbar, text="✏️ 编辑角色", command=self.edit_character,
                   width=110, **btn_outline()).pack(side="left", padx=5)
-        CTkButton(toolbar, text="🗑 删除角色", command=self.delete_character,
+        CTkButton(toolbar, text="删除角色", command=self.delete_character,
                   width=110, **btn_danger()).pack(side="left", padx=5)
 
         # 角色列表
@@ -1702,7 +1702,7 @@ class EditDialog:
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=10)
 
-        CTkButton(button_frame, text="💾 保存", command=self.ok,
+        CTkButton(button_frame, text="保存", command=self.ok,
                   width=100, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
                   width=100, **btn_ghost(height=BTN_HEIGHT_LG)).pack(side="left", padx=10)
