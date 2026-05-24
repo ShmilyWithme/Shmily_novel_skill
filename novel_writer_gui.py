@@ -37,6 +37,121 @@ ctk.set_appearance_mode("dark")
 ctk.set_default_color_theme("blue")
 
 
+# ═══════════════════════════════════════════════════════════
+#  UI 色彩系统
+# ═══════════════════════════════════════════════════════════
+
+COLORS = {
+    # ── 背景色 ──
+    "bg_main":        ("#F5F5F5", "#1E1E1E"),
+    "bg_sidebar":     ("#EBEBEB", "#1A1A1A"),
+    "bg_card":        ("#E8E8E8", "#252525"),
+    "bg_input":       ("#E0E0E0", "#2A2A2A"),
+    "bg_dialog":      ("#F0F0F0", "#1E1E1E"),
+
+    # ── 强调色 ──
+    "accent":         ("#2563EB", "#3B82F6"),
+    "accent_hover":   ("#1D4ED8", "#2563EB"),
+    "danger":         ("#DC2626", "#DC2626"),
+    "danger_hover":   ("#B91C1C", "#B91C1C"),
+    "success":        ("#16A34A", "#16A34A"),
+    "success_hover":  ("#15803D", "#15803D"),
+    "info":           ("#2563EB", "#3B82F6"),
+    "info_hover":     ("#1D4ED8", "#2563EB"),
+
+    # ── 文本色 ──
+    "text_primary":   ("#1F2937", "#E5E7EB"),
+    "text_secondary": ("#6B7280", "#9CA3AF"),
+    "text_terminal":  ("#065F46", "#A7F3D0"),
+    "text_btn_dark":  ("#1F2937", "#E5E7EB"),
+    "text_btn_light": ("#F9FAFB", "#F9FAFB"),
+
+    # ── 边框/分隔线 ──
+    "border":         ("#D1D5DB", "#374151"),
+    "border_focus":   ("#3B82F6", "#3B82F6"),
+    "divider":        ("#E5E7EB", "#2D2D2D"),
+    "border_btn":     ("#D1D5DB", "#4B5563"),
+
+    # ── 状态色 ──
+    "status_ready":   ("#E5E7EB", "#2D2D2D"),
+    "status_running": ("#DBEAFE", "#1E3A5F"),
+    "status_success": ("#DCFCE7", "#14532D"),
+    "status_error":   ("#FEE2E2", "#450A0A"),
+
+    # ── hover ──
+    "hover_outline":  ("#E5E7EB", "#374151"),
+}
+
+# ── 尺寸常量 ──
+CORNER_RADIUS_SM = 6
+CORNER_RADIUS_MD = 8
+CORNER_RADIUS_LG = 10
+CORNER_RADIUS_XL = 12
+
+BTN_HEIGHT_SM = 30
+BTN_HEIGHT_MD = 36
+BTN_HEIGHT_LG = 40
+
+# ── 字体 ──
+FONT_MONO = ("Consolas", 12)
+FONT_TITLE = ("Microsoft YaHei UI", 24, "bold")
+FONT_SECTION = ("Microsoft YaHei UI", 12, "bold")
+FONT_BODY = ("Microsoft YaHei UI", 13)
+FONT_SMALL = ("Microsoft YaHei UI", 11)
+
+
+def btn_primary(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_MD,
+                    fg_color=COLORS["accent"], hover_color=COLORS["accent_hover"],
+                    text_color=COLORS["text_btn_light"])
+    defaults.update(kwargs)
+    return defaults
+
+def btn_outline(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_MD, corner_radius=CORNER_RADIUS_MD,
+                    fg_color="transparent", border_width=1,
+                    border_color=COLORS["border_btn"],
+                    text_color=COLORS["text_btn_dark"],
+                    hover_color=COLORS["hover_outline"])
+    defaults.update(kwargs)
+    return defaults
+
+def btn_danger(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_MD, corner_radius=CORNER_RADIUS_MD,
+                    fg_color=COLORS["danger"], hover_color=COLORS["danger_hover"],
+                    text_color=COLORS["text_btn_light"])
+    defaults.update(kwargs)
+    return defaults
+
+def btn_success(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_MD, corner_radius=CORNER_RADIUS_MD,
+                    fg_color=COLORS["success"], hover_color=COLORS["success_hover"],
+                    text_color=COLORS["text_btn_light"])
+    defaults.update(kwargs)
+    return defaults
+
+def btn_info(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_MD, corner_radius=CORNER_RADIUS_MD,
+                    fg_color=COLORS["info"], hover_color=COLORS["info_hover"],
+                    text_color=COLORS["text_btn_light"])
+    defaults.update(kwargs)
+    return defaults
+
+def btn_ghost(**kwargs):
+    defaults = dict(height=BTN_HEIGHT_SM, corner_radius=CORNER_RADIUS_SM,
+                    fg_color="transparent", border_width=1,
+                    border_color=COLORS["border_btn"],
+                    text_color=COLORS["text_secondary"],
+                    hover_color=COLORS["hover_outline"])
+    defaults.update(kwargs)
+    return defaults
+
+def get_color(key):
+    mode = ctk.get_appearance_mode()
+    pair = COLORS[key]
+    return pair[1] if mode == "Dark" else pair[0]
+
+
 def get_resource_path(relative_path):
     """获取资源文件的绝对路径"""
     if getattr(sys, 'frozen', False):
@@ -106,7 +221,8 @@ class ModernNovelWriterApp:
 
     def create_left_panel(self):
         """创建左侧面板"""
-        self.left_panel = CTkFrame(self.main_container, width=280, corner_radius=15)
+        self.left_panel = CTkFrame(self.main_container, width=280, corner_radius=CORNER_RADIUS_XL,
+                                    fg_color=COLORS["bg_sidebar"])
         self.left_panel.pack(side="left", fill="y", padx=(0, 15))
         self.left_panel.pack_propagate(False)
 
@@ -119,9 +235,9 @@ class ModernNovelWriterApp:
         header_frame.pack(fill="x", padx=15, pady=(20, 10))
 
         CTkLabel(header_frame, text="网文写作助手",
-                 font=CTkFont(size=24, weight="bold")).pack(anchor="w")
+                 font=FONT_TITLE).pack(anchor="w")
         CTkLabel(header_frame, text="Claude Code 集成版",
-                 font=CTkFont(size=12), text_color="gray").pack(anchor="w")
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(anchor="w")
 
         # 项目信息卡片
         self.create_project_card()
@@ -131,75 +247,74 @@ class ModernNovelWriterApp:
 
     def create_project_card(self):
         """创建项目信息卡片"""
-        card = CTkFrame(self.left_scroll, corner_radius=12)
+        card = CTkFrame(self.left_scroll, corner_radius=CORNER_RADIUS_LG, fg_color=COLORS["bg_card"])
         card.pack(fill="x", padx=15, pady=10)
 
         # 项目名称
         self.project_name_var = ctk.StringVar(value="未打开项目")
         CTkLabel(card, text="当前项目",
-                 font=CTkFont(size=11), text_color="gray").pack(anchor="w", padx=15, pady=(15, 0))
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(anchor="w", padx=15, pady=(15, 0))
         CTkLabel(card, textvariable=self.project_name_var,
                  font=CTkFont(size=16, weight="bold")).pack(anchor="w", padx=15, pady=(0, 5))
 
         # 项目类型
         self.project_type_var = ctk.StringVar(value="")
         CTkLabel(card, textvariable=self.project_type_var,
-                 font=CTkFont(size=12), text_color="gray").pack(anchor="w", padx=15, pady=(0, 15))
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(anchor="w", padx=15, pady=(0, 15))
 
     def create_action_buttons(self):
         """创建快捷操作按钮"""
         # 项目操作
+        CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="项目操作",
-                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(15, 5))
+                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
 
         project_buttons = [
-            ("新建小说", self.new_project),
-            ("打开项目", self.open_project),
-            ("保存项目", self.save_project),
+            ("📄 新建小说", self.new_project),
+            ("📂 打开项目", self.open_project),
+            ("💾 保存项目", self.save_project),
         ]
 
         for text, command in project_buttons:
-            btn = CTkButton(self.left_scroll, text=text, command=command,
-                           height=40, corner_radius=10, anchor="w")
+            btn = CTkButton(self.left_scroll, text=text, command=command, anchor="w",
+                           **btn_primary())
             btn.pack(fill="x", padx=15, pady=3)
 
         # AI 功能
+        CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="AI 功能",
-                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
 
         ai_buttons = [
-            ("生成总大纲", self.generate_outline),
-            ("规划章节", self.plan_chapter),
-            ("写章节", self.write_chapter),
-            ("续写", self.continue_writing),
-            ("审稿", self.review_chapter),
-            ("润色", self.polish_chapter),
+            ("📋 生成总大纲", self.generate_outline),
+            ("📝 规划章节", self.plan_chapter),
+            ("✍️ 写章节", self.write_chapter),
+            ("📖 续写", self.continue_writing),
+            ("🔍 审稿", self.review_chapter),
+            ("💎 润色", self.polish_chapter),
         ]
 
         for text, command in ai_buttons:
-            btn = CTkButton(self.left_scroll, text=text, command=command,
-                           height=36, corner_radius=10, fg_color="transparent",
-                           border_width=1, text_color=("gray10", "gray90"),
-                           hover_color=("gray70", "gray30"), anchor="w")
+            btn = CTkButton(self.left_scroll, text=text, command=command, anchor="w",
+                           **btn_outline())
             btn.pack(fill="x", padx=15, pady=2)
 
         # 管理功能
+        CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="管理功能",
-                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
 
         manage_buttons = [
-            ("人物管理", self.view_characters),
-            ("世界观设定", self.edit_worldbuilding),
-            ("风格配置", self.style_settings),
-            ("统计分析", self.word_stats),
-            ("导出小说", self.export_novel),
+            ("👤 人物管理", self.view_characters),
+            ("🌍 世界观设定", self.edit_worldbuilding),
+            ("🎨 风格配置", self.style_settings),
+            ("📊 统计分析", self.word_stats),
+            ("📤 导出小说", self.export_novel),
         ]
 
         for text, command in manage_buttons:
-            btn = CTkButton(self.left_scroll, text=text, command=command,
-                           height=36, corner_radius=10, fg_color="transparent",
-                           border_width=1, text_color=("gray10", "gray90"),
-                           hover_color=("gray70", "gray30"), anchor="w")
+            btn = CTkButton(self.left_scroll, text=text, command=command, anchor="w",
+                           **btn_outline())
             btn.pack(fill="x", padx=15, pady=2)
 
         # 主题切换
@@ -215,21 +330,25 @@ class ModernNovelWriterApp:
         theme_menu.pack(side="right")
 
         # 授权信息
+        CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
         CTkLabel(self.left_scroll, text="授权信息",
-                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+                 font=FONT_SECTION).pack(anchor="w", padx=20, pady=(10, 5))
 
-        CTkButton(self.left_scroll, text="查看授权状态", command=self.show_license_info,
-                  height=36, corner_radius=10, fg_color="transparent",
-                  border_width=1, text_color=("gray10", "gray90"),
-                  hover_color=("gray70", "gray30"), anchor="w").pack(fill="x", padx=15, pady=2)
+        CTkButton(self.left_scroll, text="🔑 查看授权状态", command=self.show_license_info,
+                  anchor="w", **btn_outline()).pack(fill="x", padx=15, pady=2)
 
     def create_right_panel(self):
         """创建右侧面板"""
-        self.right_panel = CTkFrame(self.main_container, corner_radius=15)
+        self.right_panel = CTkFrame(self.main_container, corner_radius=CORNER_RADIUS_XL,
+                                     fg_color=COLORS["bg_main"])
         self.right_panel.pack(side="right", fill="both", expand=True)
 
         # 标签页视图
-        self.tabview = CTkTabview(self.right_panel, corner_radius=12)
+        self.tabview = CTkTabview(self.right_panel, corner_radius=CORNER_RADIUS_LG,
+                                   segmented_button_fg_color=COLORS["bg_sidebar"],
+                                   segmented_button_selected_color=COLORS["accent"],
+                                   segmented_button_selected_hover_color=COLORS["accent_hover"],
+                                   segmented_button_unselected_color=COLORS["bg_sidebar"])
         self.tabview.pack(fill="both", expand=True, padx=10, pady=10)
 
         # 创建标签页
@@ -246,16 +365,16 @@ class ModernNovelWriterApp:
         toolbar = CTkFrame(self.tabview.tab("写作"), fg_color="transparent")
         toolbar.pack(fill="x", padx=10, pady=(10, 5))
 
-        CTkButton(toolbar, text="保存章节", command=self.save_chapter,
-                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
-        CTkButton(toolbar, text="字数统计", command=self.count_words,
-                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="💾 保存章节", command=self.save_chapter,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="📊 字数统计", command=self.count_words,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 章节选择
         chapter_frame = CTkFrame(self.tabview.tab("写作"), fg_color="transparent")
         chapter_frame.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(chapter_frame, text="当前章节:").pack(side="left", padx=(0, 10))
+        CTkLabel(chapter_frame, text="当前章节:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
         self.chapter_var = ctk.StringVar(value="暂无章节")
         self.chapter_menu = CTkOptionMenu(chapter_frame, values=["暂无章节"],
                                           variable=self.chapter_var, width=150,
@@ -264,12 +383,15 @@ class ModernNovelWriterApp:
 
         self.word_count_var = ctk.StringVar(value="字数: 0")
         CTkLabel(chapter_frame, textvariable=self.word_count_var,
-                 font=CTkFont(size=12)).pack(side="right")
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(side="right")
 
         # 写作区域
         self.writing_text = CTkTextbox(self.tabview.tab("写作"),
-                                        font=CTkFont(size=14),
-                                        corner_radius=10)
+                                        font=FONT_BODY,
+                                        corner_radius=CORNER_RADIUS_LG,
+                                        fg_color=COLORS["bg_input"],
+                                        border_width=1,
+                                        border_color=COLORS["border"])
         self.writing_text.pack(fill="both", expand=True, padx=10, pady=10)
 
         # 绑定字数统计
@@ -283,18 +405,18 @@ class ModernNovelWriterApp:
         toolbar = CTkFrame(self.tabview.tab("大纲"), fg_color="transparent")
         toolbar.pack(fill="x", padx=10, pady=(10, 5))
 
-        CTkButton(toolbar, text="生成总大纲", command=self.generate_outline,
-                  width=120, height=32, corner_radius=8).pack(side="left", padx=5)
-        CTkButton(toolbar, text="生成卷大纲", command=self.generate_volume_outline,
-                  width=120, height=32, corner_radius=8).pack(side="left", padx=5)
-        CTkButton(toolbar, text="保存大纲", command=self.save_outline,
-                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="📋 生成总大纲", command=self.generate_outline,
+                  width=130, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="📝 生成卷大纲", command=self.generate_volume_outline,
+                  width=130, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="💾 保存大纲", command=self.save_outline,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 大纲选择区域
         outline_selector = CTkFrame(self.tabview.tab("大纲"), fg_color="transparent")
         outline_selector.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(outline_selector, text="查看大纲:").pack(side="left", padx=(0, 10))
+        CTkLabel(outline_selector, text="查看大纲:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
 
         self.outline_var = ctk.StringVar(value="总大纲")
         self.outline_menu = CTkOptionMenu(outline_selector, values=["总大纲"],
@@ -302,87 +424,108 @@ class ModernNovelWriterApp:
                                           command=self._on_outline_selected)
         self.outline_menu.pack(side="left")
 
-        CTkButton(outline_selector, text="刷新", command=self.load_outline,
-                  width=80, height=28, corner_radius=8).pack(side="left", padx=10)
+        CTkButton(outline_selector, text="🔄 刷新", command=self.load_outline,
+                  width=90, **btn_ghost()).pack(side="left", padx=10)
 
         # 大纲显示区域
         self.outline_text = CTkTextbox(self.tabview.tab("大纲"),
-                                        font=CTkFont(size=13),
-                                        corner_radius=10)
+                                        font=FONT_BODY,
+                                        corner_radius=CORNER_RADIUS_LG,
+                                        fg_color=COLORS["bg_input"],
+                                        border_width=1,
+                                        border_color=COLORS["border"])
         self.outline_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_terminal_tab(self):
         """创建终端标签页"""
         self.tabview.add("终端")
 
-        # 进度提示区域（更明显）
-        self.progress_frame = CTkFrame(self.tabview.tab("终端"), height=40, corner_radius=8)
+        # 进度提示区域
+        self.progress_frame = CTkFrame(self.tabview.tab("终端"), height=40,
+                                        corner_radius=CORNER_RADIUS_MD,
+                                        fg_color=COLORS["status_ready"])
         self.progress_frame.pack(fill="x", padx=10, pady=(10, 5))
         self.progress_frame.pack_propagate(False)
 
         self.progress_label = CTkLabel(self.progress_frame, text="就绪",
-                                        font=CTkFont(size=14, weight="bold"))
+                                        font=FONT_BODY, weight="bold")
         self.progress_label.pack(expand=True)
 
         # 命令输入区域
         input_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
         input_frame.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(input_frame, text="Claude Code:").pack(side="left", padx=(0, 10))
+        CTkLabel(input_frame, text="Claude Code:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
 
         self.command_var = ctk.StringVar(value="/novel-write ")
         self.command_entry = CTkEntry(input_frame, textvariable=self.command_var,
-                                       height=40, corner_radius=10)
+                                       height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
+                                       fg_color=COLORS["bg_input"],
+                                       border_width=1, border_color=COLORS["border"])
         self.command_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.command_entry.bind("<Return>", lambda _: self.execute_command())
 
-        CTkButton(input_frame, text="执行", command=self.execute_command,
-                  width=80, height=40, corner_radius=10).pack(side="left", padx=5)
-        CTkButton(input_frame, text="停止", command=self.stop_command,
-                  width=80, height=40, corner_radius=10,
-                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
+        CTkButton(input_frame, text="▶ 执行", command=self.execute_command,
+                  width=90, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(input_frame, text="⏹ 停止", command=self.stop_command,
+                  width=90, **btn_danger()).pack(side="left", padx=5)
 
-        # 回复输入区域（用于回答 Claude 的问题）
+        # 回复输入区域
         reply_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
         reply_frame.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(reply_frame, text="回复:").pack(side="left", padx=(0, 10))
+        CTkLabel(reply_frame, text="回复:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
 
         self.reply_var = ctk.StringVar()
         self.reply_entry = CTkEntry(reply_frame, textvariable=self.reply_var,
-                                     height=40, corner_radius=10)
+                                     height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
+                                     fg_color=COLORS["bg_input"],
+                                     border_width=1, border_color=COLORS["border"])
         self.reply_entry.pack(side="left", fill="x", expand=True, padx=5)
         self.reply_entry.bind("<Return>", lambda _: self.send_reply())
 
-        CTkButton(reply_frame, text="发送", command=self.send_reply,
-                  width=80, height=40, corner_radius=10).pack(side="left", padx=5)
+        CTkButton(reply_frame, text="📤 发送", command=self.send_reply,
+                  width=90, **btn_primary()).pack(side="left", padx=5)
 
         # 授权按钮区域
         auth_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
         auth_frame.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(auth_frame, text="授权操作:").pack(side="left", padx=(0, 10))
+        CTkLabel(auth_frame, text="授权操作:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
 
         CTkButton(auth_frame, text="✅ 允许 (y)", command=lambda: self.send_auth("y"),
-                  width=100, height=35, corner_radius=10,
-                  fg_color="green", hover_color="darkgreen").pack(side="left", padx=5)
+                  width=110, **btn_success()).pack(side="left", padx=5)
         CTkButton(auth_frame, text="❌ 拒绝 (n)", command=lambda: self.send_auth("n"),
-                  width=100, height=35, corner_radius=10,
-                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
-        CTkButton(auth_frame, text="全部允许 (a)", command=lambda: self.send_auth("a"),
-                  width=100, height=35, corner_radius=10,
-                  fg_color="blue", hover_color="darkblue").pack(side="left", padx=5)
+                  width=110, **btn_danger()).pack(side="left", padx=5)
+        CTkButton(auth_frame, text="🔓 全部允许 (a)", command=lambda: self.send_auth("a"),
+                  width=130, **btn_info()).pack(side="left", padx=5)
 
-        # 终端输出区域（只读）
+        # 终端输出区域
         self.terminal_text = CTkTextbox(self.tabview.tab("终端"),
-                                         font=CTkFont(family="Consolas", size=12),
-                                         corner_radius=10, state="disabled")
+                                         font=FONT_MONO,
+                                         corner_radius=CORNER_RADIUS_LG,
+                                         fg_color=COLORS["bg_input"],
+                                         border_width=1,
+                                         border_color=COLORS["border"],
+                                         state="disabled")
         self.terminal_text.pack(fill="both", expand=True, padx=10, pady=10)
 
         # 清空按钮
-        CTkButton(self.tabview.tab("终端"), text="清空终端", command=self.clear_terminal,
-                  width=100, height=30, corner_radius=8,
-                  fg_color="transparent", border_width=1).pack(anchor="e", padx=10, pady=5)
+        CTkButton(self.tabview.tab("终端"), text="🗑 清空终端", command=self.clear_terminal,
+                  width=110, **btn_ghost()).pack(anchor="e", padx=10, pady=5)
+
+        # 绑定输入框聚焦高亮
+        self._bind_focus_highlight(self.command_entry)
+        self._bind_focus_highlight(self.reply_entry)
+
+    def _bind_focus_highlight(self, entry):
+        """为输入框绑定聚焦高亮效果"""
+        def on_focus_in(_):
+            entry.configure(border_color=get_color("border_focus"), border_width=2)
+        def on_focus_out(_):
+            entry.configure(border_color=get_color("border"), border_width=1)
+        entry.bind("<FocusIn>", on_focus_in)
+        entry.bind("<FocusOut>", on_focus_out)
 
     def create_stats_tab(self):
         """创建统计标签页"""
@@ -392,25 +535,67 @@ class ModernNovelWriterApp:
         toolbar = CTkFrame(self.tabview.tab("统计"), fg_color="transparent")
         toolbar.pack(fill="x", padx=10, pady=(10, 5))
 
-        CTkButton(toolbar, text="刷新统计", command=self.refresh_stats,
-                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
-        CTkButton(toolbar, text="导出报告", command=self.export_stats,
-                  width=100, height=32, corner_radius=8).pack(side="left", padx=5)
+        CTkButton(toolbar, text="🔄 刷新统计", command=self.refresh_stats,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="📤 导出报告", command=self.export_stats,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
 
         # 统计信息显示
         self.stats_text = CTkTextbox(self.tabview.tab("统计"),
-                                      font=CTkFont(size=13),
-                                      corner_radius=10)
+                                      font=FONT_BODY,
+                                      corner_radius=CORNER_RADIUS_LG,
+                                      fg_color=COLORS["bg_input"],
+                                      border_width=1,
+                                      border_color=COLORS["border"])
         self.stats_text.pack(fill="both", expand=True, padx=10, pady=10)
 
     def create_status_bar(self):
         """创建状态栏"""
-        status_frame = CTkFrame(self.root, height=35, corner_radius=0)
+        status_frame = CTkFrame(self.root, height=35, corner_radius=0,
+                                 fg_color=COLORS["bg_sidebar"])
         status_frame.pack(fill="x", side="bottom")
 
         self.status_var = ctk.StringVar(value="就绪")
         CTkLabel(status_frame, textvariable=self.status_var,
-                 font=CTkFont(size=12)).pack(side="left", padx=15)
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(side="left", padx=15)
+
+        # 右侧信息
+        self.status_project_var = ctk.StringVar(value="")
+        CTkLabel(status_frame, textvariable=self.status_project_var,
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(side="left", padx=10)
+
+        self.status_words_var = ctk.StringVar(value="")
+        CTkLabel(status_frame, textvariable=self.status_words_var,
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(side="left", padx=10)
+
+        self.status_time_var = ctk.StringVar(value="")
+        CTkLabel(status_frame, textvariable=self.status_time_var,
+                 font=FONT_SMALL, text_color=COLORS["text_secondary"]).pack(side="right", padx=15)
+
+        # 启动时间更新
+        self._update_status_time()
+
+    def _update_status_time(self):
+        """更新状态栏时间"""
+        self.status_time_var.set(datetime.now().strftime("%H:%M:%S"))
+        self.root.after(1000, self._update_status_time)
+
+    def update_status_project(self):
+        """更新状态栏项目信息"""
+        if self.project_path:
+            path = self.project_path
+            if len(path) > 40:
+                path = "..." + path[-37:]
+            self.status_project_var.set(f"📁 {path}")
+        else:
+            self.status_project_var.set("")
+
+    def update_status_words(self):
+        """更新状态栏字数信息"""
+        if hasattr(self, 'writing_text'):
+            content = self.writing_text.get("1.0", "end")
+            words = len(content.replace(" ", "").replace("\n", ""))
+            self.status_words_var.set(f"📝 {words} 字")
 
     def change_theme(self, mode):
         """切换主题"""
@@ -541,12 +726,12 @@ class ModernNovelWriterApp:
             self._terminal_write(f"\n[命令执行完成，耗时 {elapsed_str}]\n")
             self.update_status(f"命令执行完成，耗时 {elapsed_str}")
             self.progress_label.configure(text=f"✅ 完成 ({elapsed_str})")
-            self.progress_frame.configure(fg_color=("green", "darkgreen"))
+            self.progress_frame.configure(fg_color=COLORS["status_success"])
         else:
             self._terminal_write(f"\n[命令执行失败，返回码: {returncode}，耗时 {elapsed_str}]\n")
             self.update_status(f"命令执行失败，耗时 {elapsed_str}")
             self.progress_label.configure(text=f"❌ 失败 ({elapsed_str})")
-            self.progress_frame.configure(fg_color=("red", "darkred"))
+            self.progress_frame.configure(fg_color=COLORS["status_error"])
         self._terminal_write(f"{'='*60}\n\n")
         if self.project_path:
             self.load_project_content()
@@ -558,7 +743,7 @@ class ModernNovelWriterApp:
         """重置进度提示区域"""
         if not getattr(self, '_cmd_running', False):
             self.progress_label.configure(text="就绪")
-            self.progress_frame.configure(fg_color=("gray85", "gray25"))
+            self.progress_frame.configure(fg_color=COLORS["status_ready"])
 
     def _command_error(self, error):
         """命令执行出错"""
@@ -567,7 +752,7 @@ class ModernNovelWriterApp:
         self._terminal_write(f"{'='*60}\n\n")
         self.update_status("命令执行出错")
         self.progress_label.configure(text="❌ 出错")
-        self.progress_frame.configure(fg_color=("red", "darkred"))
+        self.progress_frame.configure(fg_color=COLORS["status_error"])
 
         # 3秒后恢复就绪状态
         self.root.after(3000, self._reset_progress)
@@ -584,7 +769,7 @@ class ModernNovelWriterApp:
 
         # 更新进度提示区域
         self.progress_label.configure(text=f"⏳ {status_text}")
-        self.progress_frame.configure(fg_color=("blue", "darkblue"))
+        self.progress_frame.configure(fg_color=COLORS["status_running"])
 
         self.root.after(1000, lambda: self._update_running_status(prefix))
 
@@ -1245,20 +1430,20 @@ class CTkInputDialog:
 
         self.result = None
 
-        CTkLabel(self.top, text=text, font=CTkFont(size=14)).pack(pady=(20, 10))
+        CTkLabel(self.top, text=text, font=FONT_BODY, text_color=COLORS["text_primary"]).pack(pady=(20, 10))
 
-        self.entry = CTkEntry(self.top, width=280, height=40, corner_radius=10)
+        self.entry = CTkEntry(self.top, width=280, height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
+                               fg_color=COLORS["bg_input"], border_width=1, border_color=COLORS["border"])
         self.entry.pack(pady=10)
         self.entry.focus_set()
 
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=10)
 
-        CTkButton(button_frame, text="确定", command=self.ok,
-                  width=100, height=35, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="✅ 确定", command=self.ok,
+                  width=100, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
-                  width=100, height=35, corner_radius=10,
-                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+                  width=100, **btn_ghost(height=BTN_HEIGHT_MD)).pack(side="left", padx=10)
 
         self.entry.bind("<Return>", lambda _: self.ok())
 
@@ -1290,66 +1475,69 @@ class NewProjectDialog:
         scroll = CTkScrollableFrame(self.top, fg_color="transparent")
         scroll.pack(fill="both", expand=True, padx=10, pady=10)
 
-        CTkLabel(scroll, text="新建小说项目",
-                 font=CTkFont(size=20, weight="bold")).pack(pady=(10, 15))
+        CTkLabel(scroll, text="📄 新建小说项目",
+                 font=("Microsoft YaHei UI", 20, "bold"), text_color=COLORS["text_primary"]).pack(pady=(10, 15))
 
         # 项目名称
-        CTkLabel(scroll, text="项目名称:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="项目名称:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.name_var = ctk.StringVar()
-        CTkEntry(scroll, textvariable=self.name_var, width=400, height=36,
-                 corner_radius=10).pack(padx=20, pady=(0, 8))
+        CTkEntry(scroll, textvariable=self.name_var, width=400, height=BTN_HEIGHT_MD,
+                 corner_radius=CORNER_RADIUS_LG, fg_color=COLORS["bg_input"],
+                 border_width=1, border_color=COLORS["border"]).pack(padx=20, pady=(0, 8))
 
         # 项目类型
-        CTkLabel(scroll, text="项目类型:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="项目类型:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.type_var = ctk.StringVar(value="玄幻/仙侠")
         CTkOptionMenu(scroll, values=["玄幻/仙侠", "都市/现实", "科幻/未来", "历史/架空", "悬疑/推理", "言情/耽美"],
-                      variable=self.type_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+                      variable=self.type_var, width=400, height=BTN_HEIGHT_MD).pack(padx=20, pady=(0, 8))
 
         # 目标平台
-        CTkLabel(scroll, text="目标平台:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="目标平台:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.platform_var = ctk.StringVar(value="番茄小说")
         CTkOptionMenu(scroll, values=["番茄小说", "起点中文网", "晋江文学城", "纵横中文网", "飞卢小说", "其他"],
-                      variable=self.platform_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+                      variable=self.platform_var, width=400, height=BTN_HEIGHT_MD).pack(padx=20, pady=(0, 8))
 
         # 叙事视角
-        CTkLabel(scroll, text="叙事视角:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="叙事视角:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.pov_var = ctk.StringVar(value="第三人称限制")
         CTkOptionMenu(scroll, values=["第三人称限制", "第三人称全知", "第一人称", "多视角切换"],
-                      variable=self.pov_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+                      variable=self.pov_var, width=400, height=BTN_HEIGHT_MD).pack(padx=20, pady=(0, 8))
 
         # 目标字数
-        CTkLabel(scroll, text="目标字数（万字）:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="目标字数（万字）:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.words_var = ctk.StringVar(value="200")
-        CTkEntry(scroll, textvariable=self.words_var, width=400, height=36,
-                 corner_radius=10).pack(padx=20, pady=(0, 8))
+        CTkEntry(scroll, textvariable=self.words_var, width=400, height=BTN_HEIGHT_MD,
+                 corner_radius=CORNER_RADIUS_LG, fg_color=COLORS["bg_input"],
+                 border_width=1, border_color=COLORS["border"]).pack(padx=20, pady=(0, 8))
 
         # 预计章节数
-        CTkLabel(scroll, text="预计章节数:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="预计章节数:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.chapters_var = ctk.StringVar(value="500")
-        CTkEntry(scroll, textvariable=self.chapters_var, width=400, height=36,
-                 corner_radius=10).pack(padx=20, pady=(0, 8))
+        CTkEntry(scroll, textvariable=self.chapters_var, width=400, height=BTN_HEIGHT_MD,
+                 corner_radius=CORNER_RADIUS_LG, fg_color=COLORS["bg_input"],
+                 border_width=1, border_color=COLORS["border"]).pack(padx=20, pady=(0, 8))
 
         # 目标读者
-        CTkLabel(scroll, text="目标读者:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="目标读者:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.audience_var = ctk.StringVar(value="男频")
         CTkOptionMenu(scroll, values=["男频", "女频", "全年龄"],
-                      variable=self.audience_var, width=400, height=36).pack(padx=20, pady=(0, 8))
+                      variable=self.audience_var, width=400, height=BTN_HEIGHT_MD).pack(padx=20, pady=(0, 8))
 
         # 核心卖点
-        CTkLabel(scroll, text="核心卖点（一句话简介）:").pack(anchor="w", padx=20)
+        CTkLabel(scroll, text="核心卖点（一句话简介）:", text_color=COLORS["text_primary"]).pack(anchor="w", padx=20)
         self.hook_var = ctk.StringVar()
-        CTkEntry(scroll, textvariable=self.hook_var, width=400, height=36,
-                 corner_radius=10).pack(padx=20, pady=(0, 8))
+        CTkEntry(scroll, textvariable=self.hook_var, width=400, height=BTN_HEIGHT_MD,
+                 corner_radius=CORNER_RADIUS_LG, fg_color=COLORS["bg_input"],
+                 border_width=1, border_color=COLORS["border"]).pack(padx=20, pady=(0, 8))
 
         # 按钮
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=15)
 
-        CTkButton(button_frame, text="创建项目", command=self.ok,
-                  width=120, height=40, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="✅ 创建项目", command=self.ok,
+                  width=130, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
-                  width=120, height=40, corner_radius=10,
-                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+                  width=100, **btn_ghost(height=BTN_HEIGHT_LG)).pack(side="left", padx=10)
 
     def ok(self):
         if not self.name_var.get():
@@ -1388,16 +1576,16 @@ class CharacterManagerDialog:
         toolbar = CTkFrame(self.top, fg_color="transparent")
         toolbar.pack(fill="x", padx=15, pady=(15, 10))
 
-        CTkButton(toolbar, text="新建角色", command=self.new_character,
-                  width=100, height=35, corner_radius=10).pack(side="left", padx=5)
-        CTkButton(toolbar, text="编辑角色", command=self.edit_character,
-                  width=100, height=35, corner_radius=10).pack(side="left", padx=5)
-        CTkButton(toolbar, text="删除角色", command=self.delete_character,
-                  width=100, height=35, corner_radius=10,
-                  fg_color="red", hover_color="darkred").pack(side="left", padx=5)
+        CTkButton(toolbar, text="➕ 新建角色", command=self.new_character,
+                  width=110, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="✏️ 编辑角色", command=self.edit_character,
+                  width=110, **btn_outline()).pack(side="left", padx=5)
+        CTkButton(toolbar, text="🗑 删除角色", command=self.delete_character,
+                  width=110, **btn_danger()).pack(side="left", padx=5)
 
         # 角色列表
-        self.character_list = CTkTextbox(self.top, font=CTkFont(size=13), corner_radius=10)
+        self.character_list = CTkTextbox(self.top, font=FONT_BODY, corner_radius=CORNER_RADIUS_LG,
+                                          fg_color=COLORS["bg_input"], border_width=1, border_color=COLORS["border"])
         self.character_list.pack(fill="both", expand=True, padx=15, pady=10)
 
         # 加载角色列表
@@ -1505,7 +1693,8 @@ class EditDialog:
         self.result = None
 
         # 文本编辑区域
-        self.text = CTkTextbox(self.top, font=CTkFont(size=13), corner_radius=10)
+        self.text = CTkTextbox(self.top, font=FONT_BODY, corner_radius=CORNER_RADIUS_LG,
+                                fg_color=COLORS["bg_input"], border_width=1, border_color=COLORS["border"])
         self.text.pack(fill="both", expand=True, padx=15, pady=15)
         self.text.insert("1.0", content)
 
@@ -1513,11 +1702,10 @@ class EditDialog:
         button_frame = CTkFrame(self.top, fg_color="transparent")
         button_frame.pack(pady=10)
 
-        CTkButton(button_frame, text="保存", command=self.ok,
-                  width=100, height=40, corner_radius=10).pack(side="left", padx=10)
+        CTkButton(button_frame, text="💾 保存", command=self.ok,
+                  width=100, **btn_primary()).pack(side="left", padx=10)
         CTkButton(button_frame, text="取消", command=self.cancel,
-                  width=100, height=40, corner_radius=10,
-                  fg_color="transparent", border_width=1).pack(side="left", padx=10)
+                  width=100, **btn_ghost(height=BTN_HEIGHT_LG)).pack(side="left", padx=10)
 
     def ok(self):
         self.result = self.text.get("1.0", "end")
