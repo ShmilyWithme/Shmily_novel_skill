@@ -448,7 +448,7 @@ class ModernNovelWriterApp:
         self.progress_frame.pack_propagate(False)
 
         self.progress_label = CTkLabel(self.progress_frame, text="就绪",
-                                        font=FONT_BODY, weight="bold")
+                                        font=CTkFont(size=13, weight="bold"))
         self.progress_label.pack(expand=True)
 
         # 命令输入区域
