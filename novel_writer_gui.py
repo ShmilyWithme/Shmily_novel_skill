@@ -214,6 +214,15 @@ class ModernNovelWriterApp:
                                     width=120)
         theme_menu.pack(side="right")
 
+        # 授权信息
+        CTkLabel(self.left_scroll, text="授权信息",
+                 font=CTkFont(size=12, weight="bold")).pack(anchor="w", padx=20, pady=(20, 5))
+
+        CTkButton(self.left_scroll, text="查看授权状态", command=self.show_license_info,
+                  height=36, corner_radius=10, fg_color="transparent",
+                  border_width=1, text_color=("gray10", "gray90"),
+                  hover_color=("gray70", "gray30"), anchor="w").pack(fill="x", padx=15, pady=2)
+
     def create_right_panel(self):
         """创建右侧面板"""
         self.right_panel = CTkFrame(self.main_container, corner_radius=15)
@@ -348,26 +357,6 @@ class ModernNovelWriterApp:
         CTkButton(reply_frame, text="发送", command=self.send_reply,
                   width=80, height=40, corner_radius=10).pack(side="left", padx=5)
 
-        # 快捷命令
-        quick_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
-        quick_frame.pack(fill="x", padx=10, pady=5)
-
-        quick_commands = [
-            ("新建小说", "/novel-write 新建小说"),
-            ("生成大纲", "/novel-write 生成总大纲"),
-            ("规划章节", "/novel-write 规划第1章"),
-            ("写章节", "/novel-write 写第1章"),
-            ("续写", "/novel-write 继续写"),
-            ("审稿", "/novel-write 审稿"),
-            ("检查一致性", "/novel-write 检查一致性"),
-        ]
-
-        for text, command in quick_commands:
-            CTkButton(quick_frame, text=text, command=lambda cmd=command: self.run_quick_command(cmd),
-                      height=30, corner_radius=8, fg_color="transparent",
-                      border_width=1, text_color=("gray10", "gray90"),
-                      hover_color=("gray70", "gray30")).pack(side="left", padx=3)
-
         # 终端输出区域（只读）
         self.terminal_text = CTkTextbox(self.tabview.tab("终端"),
                                          font=CTkFont(family="Consolas", size=12),
@@ -415,6 +404,34 @@ class ModernNovelWriterApp:
             ctk.set_appearance_mode("dark")
         else:
             ctk.set_appearance_mode("system")
+
+    def show_license_info(self):
+        """显示授权信息"""
+        dialog = CTkToplevel(self.root)
+        dialog.title("授权信息")
+        dialog.geometry("400x300")
+        dialog.transient(self.root)
+        dialog.grab_set()
+
+        frame = CTkFrame(dialog, fg_color="transparent")
+        frame.pack(fill="both", expand=True, padx=20, pady=20)
+
+        CTkLabel(frame, text="网文写作助手",
+                 font=CTkFont(size=18, weight="bold")).pack(pady=(0, 15))
+
+        info_text = """版本：v1.0.1
+授权类型：免费版
+状态：已授权
+
+本软件基于 Claude Code Skill 开发
+仅供学习和个人创作使用
+
+如有问题请联系开发者"""
+        CTkLabel(frame, text=info_text,
+                 font=CTkFont(size=12), justify="left").pack(pady=10)
+
+        CTkButton(frame, text="确定", command=dialog.destroy,
+                  width=100, height=35, corner_radius=10).pack(pady=15)
 
     # ==================== Claude Code 命令执行 ====================
 
