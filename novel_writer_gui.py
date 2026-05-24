@@ -281,6 +281,21 @@ class ModernNovelWriterApp:
         CTkButton(toolbar, text="保存大纲", command=self.save_outline,
                   width=100, height=32, corner_radius=8).pack(side="left", padx=5)
 
+        # 大纲选择区域
+        outline_selector = CTkFrame(self.tabview.tab("大纲"), fg_color="transparent")
+        outline_selector.pack(fill="x", padx=10, pady=5)
+
+        CTkLabel(outline_selector, text="查看大纲:").pack(side="left", padx=(0, 10))
+
+        self.outline_var = ctk.StringVar(value="总大纲")
+        self.outline_menu = CTkOptionMenu(outline_selector, values=["总大纲"],
+                                          variable=self.outline_var, width=150,
+                                          command=self._on_outline_selected)
+        self.outline_menu.pack(side="left")
+
+        CTkButton(outline_selector, text="刷新", command=self.load_outline,
+                  width=80, height=28, corner_radius=8).pack(side="left", padx=10)
+
         # 大纲显示区域
         self.outline_text = CTkTextbox(self.tabview.tab("大纲"),
                                         font=CTkFont(size=13),
@@ -291,9 +306,18 @@ class ModernNovelWriterApp:
         """创建终端标签页"""
         self.tabview.add("终端")
 
+        # 进度提示区域（更明显）
+        self.progress_frame = CTkFrame(self.tabview.tab("终端"), height=40, corner_radius=8)
+        self.progress_frame.pack(fill="x", padx=10, pady=(10, 5))
+        self.progress_frame.pack_propagate(False)
+
+        self.progress_label = CTkLabel(self.progress_frame, text="就绪",
+                                        font=CTkFont(size=14, weight="bold"))
+        self.progress_label.pack(expand=True)
+
         # 命令输入区域
         input_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
-        input_frame.pack(fill="x", padx=10, pady=(10, 5))
+        input_frame.pack(fill="x", padx=10, pady=5)
 
         CTkLabel(input_frame, text="Claude Code:").pack(side="left", padx=(0, 10))
 
@@ -472,12 +496,25 @@ class ModernNovelWriterApp:
         if returncode == 0:
             self._terminal_write(f"\n[命令执行完成，耗时 {elapsed_str}]\n")
             self.update_status(f"命令执行完成，耗时 {elapsed_str}")
+            self.progress_label.configure(text=f"✅ 完成 ({elapsed_str})")
+            self.progress_frame.configure(fg_color=("green", "darkgreen"))
         else:
             self._terminal_write(f"\n[命令执行失败，返回码: {returncode}，耗时 {elapsed_str}]\n")
             self.update_status(f"命令执行失败，耗时 {elapsed_str}")
+            self.progress_label.configure(text=f"❌ 失败 ({elapsed_str})")
+            self.progress_frame.configure(fg_color=("red", "darkred"))
         self._terminal_write(f"{'='*60}\n\n")
         if self.project_path:
             self.load_project_content()
+
+        # 3秒后恢复就绪状态
+        self.root.after(3000, self._reset_progress)
+
+    def _reset_progress(self):
+        """重置进度提示区域"""
+        if not getattr(self, '_cmd_running', False):
+            self.progress_label.configure(text="就绪")
+            self.progress_frame.configure(fg_color=("gray85", "gray25"))
 
     def _command_error(self, error):
         """命令执行出错"""
@@ -485,6 +522,11 @@ class ModernNovelWriterApp:
         self._terminal_write(f"\n[错误] {error}\n")
         self._terminal_write(f"{'='*60}\n\n")
         self.update_status("命令执行出错")
+        self.progress_label.configure(text="❌ 出错")
+        self.progress_frame.configure(fg_color=("red", "darkred"))
+
+        # 3秒后恢复就绪状态
+        self.root.after(3000, self._reset_progress)
 
     def _update_running_status(self, prefix):
         """更新运行中的状态栏显示（带动态点和耗时）"""
@@ -493,7 +535,13 @@ class ModernNovelWriterApp:
         elapsed = time.time() - self._cmd_start_time
         dots = "." * (int(elapsed) % 4)
         elapsed_str = f"{elapsed:.0f}秒" if elapsed < 60 else f"{elapsed/60:.1f}分钟"
-        self.update_status(f"{prefix}{dots} ({elapsed_str})")
+        status_text = f"{prefix}{dots} ({elapsed_str})"
+        self.update_status(status_text)
+
+        # 更新进度提示区域
+        self.progress_label.configure(text=f"⏳ {status_text}")
+        self.progress_frame.configure(fg_color=("blue", "darkblue"))
+
         self.root.after(1000, lambda: self._update_running_status(prefix))
 
     def send_reply(self):
@@ -796,12 +844,47 @@ class ModernNovelWriterApp:
 
     def load_outline(self):
         """加载大纲"""
-        outline_file = os.path.join(self.project_path, 'outline', 'master-outline.md')
+        if not self.project_path:
+            return
+
+        outline_dir = os.path.join(self.project_path, 'outline')
+        if not os.path.exists(outline_dir):
+            return
+
+        # 更新大纲选择菜单
+        outlines = ["总大纲"]
+        for f in sorted(os.listdir(outline_dir)):
+            if f.startswith('volume-') and f.endswith('-outline.md'):
+                volume_name = f.replace('-outline.md', '').replace('volume-', '第') + '卷'
+                outlines.append(volume_name)
+
+        self.outline_menu.configure(values=outlines)
+
+        # 加载当前选择的大纲
+        self._on_outline_selected(self.outline_var.get())
+
+    def _on_outline_selected(self, choice):
+        """切换大纲时自动加载内容"""
+        if not self.project_path:
+            return
+
+        outline_dir = os.path.join(self.project_path, 'outline')
+
+        if choice == "总大纲":
+            outline_file = os.path.join(outline_dir, 'master-outline.md')
+        else:
+            # 提取卷号
+            volume_num = choice.replace('第', '').replace('卷', '')
+            outline_file = os.path.join(outline_dir, f'volume-{volume_num}-outline.md')
+
         if os.path.exists(outline_file):
             with open(outline_file, 'r', encoding='utf-8') as f:
                 content = f.read()
             self.outline_text.delete("1.0", "end")
             self.outline_text.insert("1.0", content)
+        else:
+            self.outline_text.delete("1.0", "end")
+            self.outline_text.insert("1.0", f"【{choice}】尚未生成")
 
     # ==================== 项目检查 ====================
 
