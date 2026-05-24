@@ -653,9 +653,9 @@ class ModernNovelWriterApp:
             try:
                 cwd = self.project_path if self.project_path else os.getcwd()
 
-                # 使用 -c 继续最近的对话
+                # 使用 -c 继续最近的对话，添加 < NUL 避免 stdin 警告
                 cmd = ["cmd.exe", "/c", "claude", "-p", command, "-c",
-                       "--allowedTools", "Write", "Edit"]
+                       "--allowedTools", "Write", "Edit", "<", "NUL"]
 
                 self.proc = subprocess.Popen(
                     cmd,
@@ -1082,9 +1082,17 @@ class ModernNovelWriterApp:
         # 更新大纲选择菜单
         outlines = ["总大纲"]
         for f in sorted(os.listdir(outline_dir)):
-            if f.startswith('volume-') and f.endswith('-outline.md'):
-                volume_name = f.replace('-outline.md', '').replace('volume-', '第') + '卷'
-                outlines.append(volume_name)
+            # 匹配 vol1-outline.md 或 volume-1-outline.md 格式
+            if f.endswith('-outline.md') and not f.startswith('master'):
+                name = f.replace('-outline.md', '')
+                if name.startswith('vol'):
+                    # vol1 -> 第1卷
+                    num = name.replace('vol', '')
+                    outlines.append(f"第{num}卷")
+                elif name.startswith('volume-'):
+                    # volume-1 -> 第1卷
+                    num = name.replace('volume-', '')
+                    outlines.append(f"第{num}卷")
 
         self.outline_menu.configure(values=outlines)
 
@@ -1103,7 +1111,10 @@ class ModernNovelWriterApp:
         else:
             # 提取卷号
             volume_num = choice.replace('第', '').replace('卷', '')
-            outline_file = os.path.join(outline_dir, f'volume-{volume_num}-outline.md')
+            # 尝试两种文件名格式
+            outline_file = os.path.join(outline_dir, f'vol{volume_num}-outline.md')
+            if not os.path.exists(outline_file):
+                outline_file = os.path.join(outline_dir, f'volume-{volume_num}-outline.md')
 
         if os.path.exists(outline_file):
             with open(outline_file, 'r', encoding='utf-8') as f:
