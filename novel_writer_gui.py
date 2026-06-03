@@ -329,14 +329,6 @@ class ModernNovelWriterApp:
                                     width=120)
         theme_menu.pack(side="right")
 
-        # 授权信息
-        CTkFrame(self.left_scroll, height=1, fg_color=COLORS["divider"]).pack(fill="x", padx=20, pady=(10, 0))
-        CTkLabel(self.left_scroll, text="授权信息",
-                 font=FONT_SECTION, text_color=COLORS["text_primary"]).pack(anchor="w", padx=20, pady=(10, 5))
-
-        CTkButton(self.left_scroll, text="查看授权状态", command=self.show_license_info,
-                  anchor="w", **btn_outline()).pack(fill="x", padx=15, pady=2)
-
     def create_right_panel(self):
         """创建右侧面板"""
         self.right_panel = CTkFrame(self.main_container, corner_radius=CORNER_RADIUS_XL,
@@ -355,6 +347,7 @@ class ModernNovelWriterApp:
         self.create_writing_tab()
         self.create_outline_tab()
         self.create_terminal_tab()
+        self.create_log_tab()
         self.create_stats_tab()
 
     def create_writing_tab(self):
@@ -451,56 +444,14 @@ class ModernNovelWriterApp:
                                         font=CTkFont(size=13, weight="bold"))
         self.progress_label.pack(expand=True)
 
-        # 命令输入区域
-        input_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
-        input_frame.pack(fill="x", padx=10, pady=5)
+        # 工具栏
+        toolbar = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        toolbar.pack(fill="x", padx=10, pady=5)
 
-        CTkLabel(input_frame, text="Claude Code:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
+        CTkButton(toolbar, text="清空对话", command=self.clear_terminal,
+                  width=100, **btn_ghost()).pack(side="right", padx=5)
 
-        self.command_var = ctk.StringVar(value="/novel-write ")
-        self.command_entry = CTkEntry(input_frame, textvariable=self.command_var,
-                                       height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
-                                       fg_color=COLORS["bg_input"],
-                                       border_width=1, border_color=COLORS["border"])
-        self.command_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.command_entry.bind("<Return>", lambda _: self.execute_command())
-
-        CTkButton(input_frame, text="执行", command=self.execute_command,
-                  width=90, **btn_primary()).pack(side="left", padx=5)
-        CTkButton(input_frame, text="停止", command=self.stop_command,
-                  width=90, **btn_danger()).pack(side="left", padx=5)
-
-        # 回复输入区域
-        reply_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
-        reply_frame.pack(fill="x", padx=10, pady=5)
-
-        CTkLabel(reply_frame, text="回复:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
-
-        self.reply_var = ctk.StringVar()
-        self.reply_entry = CTkEntry(reply_frame, textvariable=self.reply_var,
-                                     height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
-                                     fg_color=COLORS["bg_input"],
-                                     border_width=1, border_color=COLORS["border"])
-        self.reply_entry.pack(side="left", fill="x", expand=True, padx=5)
-        self.reply_entry.bind("<Return>", lambda _: self.send_reply())
-
-        CTkButton(reply_frame, text="发送", command=self.send_reply,
-                  width=90, **btn_primary()).pack(side="left", padx=5)
-
-        # 授权按钮区域
-        auth_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
-        auth_frame.pack(fill="x", padx=10, pady=5)
-
-        CTkLabel(auth_frame, text="授权操作:", text_color=COLORS["text_secondary"]).pack(side="left", padx=(0, 10))
-
-        CTkButton(auth_frame, text="允许 (y)", command=lambda: self.send_auth("y"),
-                  width=110, **btn_success()).pack(side="left", padx=5)
-        CTkButton(auth_frame, text="拒绝 (n)", command=lambda: self.send_auth("n"),
-                  width=110, **btn_danger()).pack(side="left", padx=5)
-        CTkButton(auth_frame, text="全部允许 (a)", command=lambda: self.send_auth("a"),
-                  width=130, **btn_info()).pack(side="left", padx=5)
-
-        # 终端输出区域
+        # 终端输出区域（聊天式界面）
         self.terminal_text = CTkTextbox(self.tabview.tab("终端"),
                                          font=FONT_MONO,
                                          corner_radius=CORNER_RADIUS_LG,
@@ -508,15 +459,79 @@ class ModernNovelWriterApp:
                                          border_width=1,
                                          border_color=COLORS["border"],
                                          state="disabled")
-        self.terminal_text.pack(fill="both", expand=True, padx=10, pady=10)
+        self.terminal_text.pack(fill="both", expand=True, padx=10, pady=5)
 
-        # 清空按钮
-        CTkButton(self.tabview.tab("终端"), text="清空终端", command=self.clear_terminal,
-                  width=110, **btn_ghost()).pack(anchor="e", padx=10, pady=5)
+        # 聊天输入区域（合并命令和回复）
+        chat_frame = CTkFrame(self.tabview.tab("终端"), fg_color="transparent")
+        chat_frame.pack(fill="x", padx=10, pady=(5, 10))
+
+        self.chat_var = ctk.StringVar(value="/novel-write ")
+        self.chat_entry = CTkEntry(chat_frame, textvariable=self.chat_var,
+                                    height=BTN_HEIGHT_LG, corner_radius=CORNER_RADIUS_LG,
+                                    fg_color=COLORS["bg_input"],
+                                    border_width=1, border_color=COLORS["border"])
+        self.chat_entry.pack(side="left", fill="x", expand=True, padx=(0, 5))
+        self.chat_entry.bind("<Return>", lambda _: self.send_message())
+
+        CTkButton(chat_frame, text="发送", command=self.send_message,
+                  width=90, **btn_primary()).pack(side="left", padx=5)
+        CTkButton(chat_frame, text="停止", command=self.stop_command,
+                  width=90, **btn_danger()).pack(side="left", padx=5)
 
         # 绑定输入框聚焦高亮
-        self._bind_focus_highlight(self.command_entry)
-        self._bind_focus_highlight(self.reply_entry)
+        self._bind_focus_highlight(self.chat_entry)
+
+    def create_log_tab(self):
+        """创建日志标签页"""
+        self.tabview.add("日志")
+
+        # 工具栏
+        toolbar = CTkFrame(self.tabview.tab("日志"), fg_color="transparent")
+        toolbar.pack(fill="x", padx=10, pady=(10, 5))
+
+        CTkButton(toolbar, text="清空日志", command=self.clear_log,
+                  width=100, **btn_ghost()).pack(side="right", padx=5)
+        CTkButton(toolbar, text="导出日志", command=self.export_log,
+                  width=100, **btn_ghost()).pack(side="right", padx=5)
+
+        # 日志显示区域
+        self.log_text = CTkTextbox(self.tabview.tab("日志"),
+                                    font=FONT_MONO,
+                                    corner_radius=CORNER_RADIUS_LG,
+                                    fg_color=COLORS["bg_input"],
+                                    border_width=1,
+                                    border_color=COLORS["border"],
+                                    state="disabled")
+        self.log_text.pack(fill="both", expand=True, padx=10, pady=(5, 10))
+
+    def _append_log(self, text, level="INFO"):
+        """追加日志"""
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        log_entry = f"[{timestamp}] [{level}] {text}\n"
+
+        self.log_text.configure(state="normal")
+        self.log_text.insert("end", log_entry)
+        self.log_text.see("end")
+        self.log_text.configure(state="disabled")
+
+    def clear_log(self):
+        """清空日志"""
+        self.log_text.configure(state="normal")
+        self.log_text.delete("1.0", "end")
+        self.log_text.configure(state="disabled")
+
+    def export_log(self):
+        """导出日志"""
+        from tkinter import filedialog
+        filepath = filedialog.asksaveasfilename(
+            defaultextension=".log",
+            filetypes=[("日志文件", "*.log"), ("文本文件", "*.txt")]
+        )
+        if filepath:
+            content = self.log_text.get("1.0", "end")
+            with open(filepath, "w", encoding="utf-8") as f:
+                f.write(content)
+            self._append_log(f"日志已导出到: {filepath}")
 
     def _bind_focus_highlight(self, entry):
         """为输入框绑定聚焦高亮效果"""
@@ -606,55 +621,36 @@ class ModernNovelWriterApp:
         else:
             ctk.set_appearance_mode("system")
 
-    def show_license_info(self):
-        """显示授权信息"""
-        dialog = CTkToplevel(self.root)
-        dialog.title("授权信息")
-        dialog.geometry("400x300")
-        dialog.transient(self.root)
-        dialog.grab_set()
-
-        frame = CTkFrame(dialog, fg_color="transparent")
-        frame.pack(fill="both", expand=True, padx=20, pady=20)
-
-        CTkLabel(frame, text="网文写作助手",
-                 font=CTkFont(size=18, weight="bold")).pack(pady=(0, 15))
-
-        info_text = """版本：v1.0.1
-授权类型：免费版
-状态：已授权
-
-本软件基于 Claude Code Skill 开发
-仅供学习和个人创作使用
-
-如有问题请联系开发者"""
-        CTkLabel(frame, text=info_text,
-                 font=CTkFont(size=12), justify="left").pack(pady=10)
-
-        CTkButton(frame, text="确定", command=dialog.destroy,
-                  width=100, height=35, corner_radius=10).pack(pady=15)
-
     # ==================== Claude Code 命令执行 ====================
 
-    def execute_command(self):
-        """直接调用 Claude Code CLI（保持会话上下文）"""
-        command = self.command_var.get().strip()
-        if not command:
+    def send_message(self):
+        """发送消息（统一命令和回复）"""
+        message = self.chat_var.get().strip()
+        if not message:
             return
 
-        self._terminal_write(f"\n{'='*60}\n")
-        self._terminal_write(f"执行命令: {command}\n")
-        self._terminal_write(f"{'='*60}\n\n")
+        # 清空输入框
+        self.chat_var.set("")
+
+        # 显示用户消息
+        self._terminal_write(f"\n>>> {message}\n\n")
+
+        # 记录日志
+        self._append_log(f"执行命令: {message}", "CMD")
+
         self._cmd_start_time = time.time()
         self._cmd_running = True
-        self._update_running_status("正在执行命令")
+        self._update_running_status("正在处理")
 
         def _run():
             try:
                 cwd = self.project_path if self.project_path else os.getcwd()
 
+                # 记录命令执行前的文件状态
+                old_state = self._get_file_state(cwd)
+
                 # 使用 -c 继续最近的对话，添加 < NUL 避免 stdin 警告
-                cmd = ["cmd.exe", "/c", "claude", "-p", command, "-c",
+                cmd = ["cmd.exe", "/c", "claude", "-p", message, "-c",
                        "--allowedTools", "Write", "Edit", "<", "NUL"]
 
                 self.proc = subprocess.Popen(
@@ -663,14 +659,33 @@ class ModernNovelWriterApp:
                     stdout=subprocess.PIPE,
                     stderr=subprocess.STDOUT,
                     cwd=cwd,
-                    encoding="utf-8",
-                    errors="replace",
-                    creationflags=subprocess.CREATE_NO_WINDOW
+                    creationflags=subprocess.CREATE_NO_WINDOW,
+                    bufsize=0  # 禁用缓冲，实时输出
                 )
-                # 保持 stdin 打开，以便发送授权响应
-                for line in self.proc.stdout:
-                    self.root.after(0, lambda l=line: self._append_terminal(l))
+                # 使用 os.read 实现实时输出（按块读取，平衡响应性和效率）
+                import os
+                fd = self.proc.stdout.fileno()
+                while True:
+                    chunk = os.read(fd, 4096)
+                    if not chunk:
+                        break
+                    try:
+                        text = chunk.decode("utf-8", errors="replace")
+                    except:
+                        text = str(chunk)
+                    self.root.after(0, lambda t=text: self._append_terminal(t))
                 self.proc.wait()
+
+                # 记录命令执行后的文件状态，显示变化
+                new_state = self._get_file_state(cwd)
+                changes = self._get_file_changes(old_state, new_state)
+                if changes:
+                    self.root.after(0, lambda: self._append_terminal("\n--- 文件修改记录 ---\n"))
+                    for change in changes:
+                        self.root.after(0, lambda c=change: self._append_terminal(c + "\n"))
+                        # 记录到日志面板
+                        self.root.after(0, lambda c=change: self._append_log(c, "FILE"))
+
                 self.root.after(0, self._command_done, self.proc.returncode)
             except Exception as e:
                 self.root.after(0, self._command_error, str(e))
@@ -691,18 +706,6 @@ class ModernNovelWriterApp:
                 self.update_status("命令已终止")
             except Exception as e:
                 self._terminal_write(f"\n[终止失败: {e}]\n")
-        else:
-            self._terminal_write("\n[没有正在运行的命令]\n")
-
-    def send_auth(self, key):
-        """向 Claude Code 发送授权确认"""
-        if self.proc and self.proc.poll() is None:
-            try:
-                self.proc.stdin.write(key + "\n")
-                self.proc.stdin.flush()
-                self._terminal_write(f"\n[已发送授权: {key}]\n")
-            except Exception as e:
-                self._terminal_write(f"\n[发送授权失败: {e}]\n")
         else:
             self._terminal_write("\n[没有正在运行的命令]\n")
 
@@ -727,6 +730,7 @@ class ModernNovelWriterApp:
             self.update_status(f"命令执行完成，耗时 {elapsed_str}")
             self.progress_label.configure(text=f"✅ 完成 ({elapsed_str})")
             self.progress_frame.configure(fg_color=COLORS["status_success"])
+            self._append_log(f"命令执行完成，耗时 {elapsed_str}", "OK")
         else:
             self._terminal_write(f"\n[命令执行失败，返回码: {returncode}，耗时 {elapsed_str}]\n")
             self.update_status(f"命令执行失败，耗时 {elapsed_str}")
@@ -751,6 +755,7 @@ class ModernNovelWriterApp:
         self._terminal_write(f"\n[错误] {error}\n")
         self._terminal_write(f"{'='*60}\n\n")
         self.update_status("命令执行出错")
+        self._append_log(f"命令执行出错: {error}", "ERROR")
         self.progress_label.configure(text="出错")
         self.progress_frame.configure(fg_color=COLORS["status_error"])
 
@@ -773,55 +778,65 @@ class ModernNovelWriterApp:
 
         self.root.after(1000, lambda: self._update_running_status(prefix))
 
-    def send_reply(self):
-        """发送回复给 Claude（继续对话）"""
-        reply = self.reply_var.get().strip()
-        if not reply:
-            return
-
-        self.reply_var.set("")
-        self._terminal_write(f"\n>>> {reply}\n\n")
-        self._cmd_start_time = time.time()
-        self._cmd_running = True
-        self._update_running_status("正在发送回复")
-
-        def _run():
-            try:
-                cwd = self.project_path if self.project_path else os.getcwd()
-                cmd = ["cmd.exe", "/c", "claude", "-p", reply, "-c",
-                       "--allowedTools", "Write", "Edit"]
-
-                self.proc = subprocess.Popen(
-                    cmd,
-                    stdin=subprocess.PIPE,
-                    stdout=subprocess.PIPE,
-                    stderr=subprocess.STDOUT,
-                    cwd=cwd,
-                    encoding="utf-8",
-                    errors="replace",
-                    creationflags=subprocess.CREATE_NO_WINDOW
-                )
-                # 保持 stdin 打开，以便发送授权响应
-                for line in self.proc.stdout:
-                    self.root.after(0, lambda l=line: self._append_terminal(l))
-                self.proc.wait()
-                self.root.after(0, self._command_done, self.proc.returncode)
-            except Exception as e:
-                self.root.after(0, self._command_error, str(e))
-
-        thread = threading.Thread(target=_run, daemon=True)
-        thread.start()
-
     def run_quick_command(self, command):
         """运行快捷命令"""
-        self.command_var.set(command)
-        self.execute_command()
+        self.chat_var.set(command)
+        self.send_message()
 
     def clear_terminal(self):
         """清空终端"""
         self.terminal_text.configure(state="normal")
         self.terminal_text.delete("1.0", "end")
         self.terminal_text.configure(state="disabled")
+
+    def _get_file_state(self, directory):
+        """获取目录下所有文件的状态"""
+        state = {}
+        if not directory or not os.path.exists(directory):
+            return state
+        for root, dirs, files in os.walk(directory):
+            # 跳过隐藏目录和构建目录
+            dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('build', 'dist', '__pycache__', 'node_modules')]
+            for file in files:
+                filepath = os.path.join(root, file)
+                try:
+                    mtime = os.path.getmtime(filepath)
+                    size = os.path.getsize(filepath)
+                    state[filepath] = (mtime, size)
+                except:
+                    pass
+        return state
+
+    def _get_file_changes(self, old_state, new_state):
+        """比较文件状态，返回变化列表"""
+        changes = []
+        all_files = set(old_state.keys()) | set(new_state.keys())
+
+        for filepath in all_files:
+            old = old_state.get(filepath)
+            new = new_state.get(filepath)
+
+            if old is None:
+                # 使用相对路径
+                try:
+                    rel_path = os.path.relpath(filepath, self.project_path) if self.project_path else filepath
+                except:
+                    rel_path = filepath
+                changes.append(f"[新增] {rel_path}")
+            elif new is None:
+                try:
+                    rel_path = os.path.relpath(filepath, self.project_path) if self.project_path else filepath
+                except:
+                    rel_path = filepath
+                changes.append(f"[删除] {rel_path}")
+            elif old != new:
+                try:
+                    rel_path = os.path.relpath(filepath, self.project_path) if self.project_path else filepath
+                except:
+                    rel_path = filepath
+                changes.append(f"[修改] {rel_path}")
+
+        return changes
 
     # ==================== 项目管理功能 ====================
 
@@ -856,8 +871,8 @@ class ModernNovelWriterApp:
             self.project_type_var.set(f"类型: {project_type} | {dialog.result.get('platform', '')}")
             self.update_status(f"项目 '{project_name}' 创建成功")
 
-            self.command_var.set(f"/novel-write 新建小说 --name {project_name} --type {project_type}")
-            self.execute_command()
+            self.chat_var.set(f"/novel-write 新建小说 --name {project_name} --type {project_type}")
+            self.send_message()
 
     def open_project(self):
         """打开项目"""
@@ -1140,8 +1155,8 @@ class ModernNovelWriterApp:
         """生成总大纲"""
         if not self._check_project():
             return
-        self.command_var.set("/novel-write 生成总大纲")
-        self.execute_command()
+        self.chat_var.set("/novel-write 生成总大纲")
+        self.send_message()
         self.tabview.set("终端")
 
     def generate_volume_outline(self):
@@ -1151,8 +1166,8 @@ class ModernNovelWriterApp:
         dialog = CTkInputDialog(text="请输入卷数:", title="生成卷大纲")
         volume = dialog.get_input()
         if volume and volume.isdigit():
-            self.command_var.set(f"/novel-write 生成第{volume}卷大纲")
-            self.execute_command()
+            self.chat_var.set(f"/novel-write 生成第{volume}卷大纲")
+            self.send_message()
             self.tabview.set("终端")
 
     def save_outline(self):
@@ -1174,16 +1189,16 @@ class ModernNovelWriterApp:
         dialog = CTkInputDialog(text="请输入章节号:", title="写章节")
         chapter = dialog.get_input()
         if chapter and chapter.isdigit():
-            self.command_var.set(f"/novel-write 写第{chapter}章")
-            self.execute_command()
+            self.chat_var.set(f"/novel-write 写第{chapter}章")
+            self.send_message()
             self.tabview.set("终端")
 
     def continue_writing(self):
         """续写"""
         if not self._check_project():
             return
-        self.command_var.set("/novel-write 继续写")
-        self.execute_command()
+        self.chat_var.set("/novel-write 继续写")
+        self.send_message()
         self.tabview.set("终端")
 
     def plan_chapter(self):
@@ -1193,8 +1208,8 @@ class ModernNovelWriterApp:
         dialog = CTkInputDialog(text="请输入章节号:", title="规划章节")
         chapter = dialog.get_input()
         if chapter and chapter.isdigit():
-            self.command_var.set(f"/novel-write 规划第{chapter}章")
-            self.execute_command()
+            self.chat_var.set(f"/novel-write 规划第{chapter}章")
+            self.send_message()
             self.tabview.set("终端")
 
     def save_chapter(self):
@@ -1393,16 +1408,16 @@ class ModernNovelWriterApp:
         """审稿"""
         if not self._check_project():
             return
-        self.command_var.set("/novel-write 审稿")
-        self.execute_command()
+        self.chat_var.set("/novel-write 审稿")
+        self.send_message()
         self.tabview.set("终端")
 
     def polish_chapter(self):
         """润色"""
         if not self._check_project():
             return
-        self.command_var.set("/novel-write 润色")
-        self.execute_command()
+        self.chat_var.set("/novel-write 润色")
+        self.send_message()
         self.tabview.set("终端")
 
     def update_status(self, message):

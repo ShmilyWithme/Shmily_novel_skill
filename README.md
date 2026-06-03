@@ -1,60 +1,40 @@
 # 网文写作助手
 
-## 项目介绍
+基于 Claude Code Skill 的智能小说创作工具，专为网络文学作者打造。
 
-网文写作助手是一款基于 **Claude Code Skill** 的智能小说创作工具，专为网络文学作者打造。
+## 前置条件
 
-本项目核心是 `/novel-write` 这一自定义 Skill，封装了大纲生成、章节撰写、人物管理、世界观设定、风格控制等专业写作模块。在此基础上，项目将 Skill 与 **customtkinter GUI 界面** 深度集成，用户可通过图形界面一键调用 AI 能力，无需手动输入命令。
+### 必须安装
 
-### 技术架构
+| 软件                      | 版本要求 | 说明                                  |
+| ------------------------- | -------- | ------------------------------------- |
+| **Claude Code CLI** | 无       | AI 核心引擎，负责大纲生成、章节撰写等 |
+| **Node.js**         | 18+      | Claude Code CLI 的运行依赖            |
 
+### 安装步骤
+
+**1. 安装 Node.js**
+
+- 前往 [nodejs.org](https://nodejs.org/) 下载 LTS 版本
+- 安装后验证：`node --version`
+
+**2. 安装 Claude Code CLI**
+
+```bash
+npm install -g @anthropic-ai/claude-code
 ```
-┌─────────────────────────────────────────────┐
-│           网文写作助手 GUI                   │
-│         (customtkinter 界面)                │
-├─────────────────────────────────────────────┤
-│            /novel-write Skill               │
-│    ┌─────┬─────┬─────┬─────┬─────┐         │
-│    │大纲 │章节 │人物 │世界 │风格 │         │
-│    │生成 │撰写 │管理 │设定 │控制 │         │
-│    └─────┴─────┴─────┴─────┴─────┘         │
-├─────────────────────────────────────────────┤
-│           Claude Code CLI + LLM             │
-└─────────────────────────────────────────────┘
-```
 
-### 核心优势
+**3. 配置 Claude Code**
 
-- **Skill 驱动** — `/novel-write` Skill 模块化设计，功能内聚，易于扩展
-- **GUI 集成** — 图形界面封装 Skill 调用，降低使用门槛
-- **专业流程** — 遵循网文创作最佳实践，从大纲到成稿一条龙
-- **多类型支持** — 覆盖玄幻、都市、科幻、历史、悬疑、言情六大类型
-- **平台适配** — 支持番茄、起点、晋江等主流平台风格
+- 首次运行 `claude` 命令，按提示登录 Anthropic 账号
+- 需要有效的 Claude API 订阅（Pro 或 Max 计划）
 
-无论你是新手作者还是资深写手，这款助手都能帮助你：
-- 快速构建世界观和故事框架
-- 保持人物设定和情节的一致性
-- 按照目标平台风格规范输出
-- 高效完成长篇连载的日常更新
+### 可选依赖（源码运行）
 
-## 原创性声明
-
-本项目为原创开发作品，核心代码、界面设计、功能架构均由开发者独立完成。项目中使用的 AI 能力基于 Claude Code 及其支持的大语言模型，不涉及任何第三方破解或逆向工程。
-
-本项目仅供学习和个人创作使用，请勿用于商业用途或非法传播。如需商业合作，请联系开发者获取授权。
-
-QQ：1943477162
-邮箱：z2960775@gmail.com ；zfc200116@163.com
-
----
-
-## 界面演示
-
-![全界面](images/screenshot_1.png)
-
-![项目示例界面](images/screenshot_2.png)
-
-![创建新项目展示](images/screenshot_3.png)
+| 软件        | 版本要求 | 说明              |
+| ----------- | -------- | ----------------- |
+| Python      | 3.8+     | 从源码运行时需要  |
+| PyInstaller | 最新版   | 打包成 EXE 时需要 |
 
 ---
 
@@ -62,14 +42,25 @@ QQ：1943477162
 
 ### 方式一：下载 EXE（推荐）
 
-前往 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases) 页面下载最新版本的 `网文写作助手.exe`，双击即可运行，无需安装 Python。
+前往 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases) 页面下载最新版本的 `网文写作助手.exe`。
+
+**优点：**
+
+- 单文件运行，无需安装 Python
+- 自带 Skill 配置和示例项目
+- 双击即可使用
+
+**要求：**
+
+- 已安装 Claude Code CLI
+- 已配置 Anthropic 账号
 
 ### 方式二：从源码运行
 
 ```bash
 git clone https://github.com/ShmilyWithme/Shmily_novel_skill.git
 cd Shmily_novel_skill
-pip install -r requirements.txt
+pip install customtkinter
 python novel_writer_gui.py
 ```
 
@@ -77,59 +68,39 @@ python novel_writer_gui.py
 
 ## 功能特性
 
-- **大纲生成** — 总大纲、卷大纲、章节梗概，三层细化
-- **章节撰写** — 3000-5000 字/章，自动遵循文风设定
-- **人物管理** — 角色设定卡、一致性检查、关系追踪
-- **世界观设定** — 力量体系、地理环境、社会结构
-- **风格控制** — 支持起点、番茄、晋江等平台风格
-- **审稿润色** — 五维评分、文字打磨、查重
-- **导出发布** — 合并章节、去除元数据、一键导出
+### 核心功能
 
-## 支持的小说类型
+| 功能       | 说明                                 |
+| ---------- | ------------------------------------ |
+| 大纲生成   | 总大纲、卷大纲、章节梗概，三层细化   |
+| 章节撰写   | 3000-5000 字/章，自动遵循文风设定    |
+| 人物管理   | 角色设定卡、一致性检查、关系追踪     |
+| 世界观设定 | 力量体系、地理环境、社会结构、时间线 |
+| 风格控制   | 支持起点、番茄、晋江等平台风格       |
+| 审稿润色   | 五维评分、文字打磨、查重             |
+| 导出发布   | 合并章节、去除元数据、一键导出       |
 
-| 类型 | 模板 |
-|------|------|
-| 玄幻/仙侠 | 修仙体系、升级流、爽文 |
+### 界面功能
+
+| 功能          | 说明                               |
+| ------------- | ---------------------------------- |
+| 聊天式终端    | 合并命令和回复，像聊天一样操作     |
+| 实时输出      | AI 响应实时显示，无缓冲延迟        |
+| 日志面板      | 独立日志标签页，记录所有操作       |
+| 文件修改记录  | 命令执行后显示新增/修改/删除的文件 |
+| 浅色/深色主题 | 支持三种主题切换                   |
+
+### 支持的小说类型
+
+| 类型      | 模板                     |
+| --------- | ------------------------ |
+| 玄幻/仙侠 | 修仙体系、升级流、爽文   |
 | 都市/现实 | 商战职场、都市异能、重生 |
-| 科幻/未来 | 星际、赛博朋克、末日 |
-| 历史/架空 | 宫斗、权谋、战争 |
-| 悬疑/推理 | 本格推理、社会派、密室 |
-| 言情/耽美 | 甜宠、虐心、先婚后爱 |
+| 科幻/未来 | 星际、赛博朋克、末日     |
+| 奇幻/魔幻 | 魔法体系、种族设定、冒险 |
+| 末世/废土 | 丧尸、生存、废土重建     |
 
-## 安装要求
-
-### EXE 版本（推荐）
-
-- [Claude Code CLI](https://docs.anthropic.com/claude-code)（必须）
-- 无需安装 Python，开箱即用
-
-### 源码版本
-
-- Python 3.8+
-- Claude Code CLI
-- 需安装依赖：`pip install -r requirements.txt`
-
-## 快速开始
-
-### 方式一：下载 EXE（推荐）
-
-1. 前往 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases) 页面下载 `网文写作助手.exe`
-2. 双击运行，程序会自动在当前目录创建 Skill 配置文件
-3. 开始创作！
-
-**特性：**
-- 单文件运行，无需安装
-- 自带 Skill 配置，无需手动配置
-- 首次运行自动初始化
-
-### 方式二：从源码运行
-
-```bash
-git clone https://github.com/ShmilyWithme/Shmily_novel_skill.git
-cd Shmily_novel_skill
-pip install -r requirements.txt
-python novel_writer_gui.py
-```
+---
 
 ## 使用说明
 
@@ -142,79 +113,111 @@ python novel_writer_gui.py
 
 ### 命令行操作
 
-| 命令 | 功能 |
-|------|------|
-| `新建小说` | 创建项目结构 |
-| `生成总大纲` | 生成故事总大纲 |
-| `生成第N卷大纲` | 生成卷级大纲 |
-| `规划第N章` | 生成章节梗概 |
-| `写第N章` | 撰写章节正文 |
-| `继续写` | 续写当前章节 |
-| `改写第N章` | 按指定方向重写 |
-| `审稿` | 审阅最近章节 |
-| `润色` | 文字打磨 |
-| `导出` | 合并导出全文 |
+| 命令              | 功能           |
+| ----------------- | -------------- |
+| `生成大纲`      | 生成故事总大纲 |
+| `生成第N卷大纲` | 生成卷级大纲   |
+| `规划第N章`     | 生成章节梗概   |
+| `写第N章`       | 撰写章节正文   |
+| `继续写`        | 续写当前章节   |
+| `改写第N章`     | 按指定方向重写 |
+| `扩写第N章`     | 扩展章节内容   |
+| `审稿`          | 审阅最近章节   |
+| `润色`          | 文字打磨       |
+| `导出`          | 合并导出全文   |
 
-## 打包成 EXE
-
-如需将程序打包成独立的 exe 文件：
-
-```bash
-# 安装 PyInstaller
-pip install pyinstaller
-
-# 一键打包（Windows）
-双击 build.bat
-
-# 或手动打包（包含 Skill 文件）
-pyinstaller --onefile --windowed --name "网文写作助手" \
-    --add-data ".claude;.claude/" \
-    novel_writer_gui.py
-```
-
-打包完成后，exe 文件在 `dist/` 目录中。
-
-**注意：** 打包时会自动包含 `.claude` 目录中的 Skill 文件，确保用户下载后可直接使用。
-
-详细打包说明见 [BUILD_README.md](BUILD_README.md)
+---
 
 ## 项目结构
 
 ```
 novel_write/
-├── novel_writer_gui.py          # GUI 主程序
-├── build.bat                    # 打包脚本
-├── BUILD_README.md              # 打包详细说明
-├── README.md                    # 项目说明
+├── novel_writer_gui.py              # GUI 主程序
+├── build.bat                        # 打包脚本
+├── README.md                        # 项目说明
+├── RELEASE_v2.0.md                  # 版本更新公告
 ├── .claude/
 │   └── skills/
 │       └── novel-write/
-│           ├── SKILL.md         # Skill 入口
-│           └── modules/         # 功能模块
-├── templates/                   # 写作模板
-│   ├── genre-templates/         # 类型模板
-│   ├── character-card-template.md
-│   ├── worldbuilding-template.md
-│   ├── outline-template.md
-│   ├── chapter-template.md
-│   └── style-guide.md
+│           ├── SKILL.md             # Skill 入口
+│           ├── modules/             # 功能模块
+│           │   ├── init-project.md
+│           │   ├── outline-generator.md
+│           │   ├── chapter-writer.md
+│           │   ├── character-manager.md
+│           │   ├── worldbuilding.md
+│           │   ├── style-control.md
+│           │   └── utils/
+│           │       ├── consistency-checker.md
+│           │       ├── review.md
+│           │       ├── stats.md
+│           │       └── export.md
+│           └── templates/           # 模板文件
+│               ├── chapter-template.md
+│               ├── character-card-template.md
+│               ├── worldbuilding-template.md
+│               └── genre-templates/
+│                   ├── xuanhuan.md
+│                   ├── dushi.md
+│                   ├── kehuan.md
+│                   ├── qihuan.md
+│                   └── moxi.md
 └── dist/
-    └── 网文写作助手.exe         # 打包后的程序
+    └── 《锈蚀的黎明》/              # 示例项目
+        ├── project.md
+        ├── chapters/
+        ├── characters/
+        ├── outline/
+        ├── worldbuilding/
+        ├── style/
+        └── notes/
 ```
 
-## 自定义
+---
 
-### 添加新类型模板
+## 打包成 EXE
 
-在 `templates/genre-templates/` 下创建新的 `.md` 文件，参考现有模板格式。
+```bash
+# 安装依赖
+pip install pyinstaller customtkinter
 
-### 修改文风参数
+# 打包
+pyinstaller --onefile --windowed \
+    --add-data ".claude/skills;.claude/skills" \
+    --add-data "dist/《锈蚀的黎明》;dist/《锈蚀的黎明》" \
+    --name "网文写作助手" \
+    novel_writer_gui.py
+```
 
-编辑项目的 `style/style-config.md` 文件，调整句式偏好、描写密度等参数。
+打包完成后，exe 文件在 `dist/` 目录中。
 
-### 添加功能模块
+---
 
-在 `.claude/skills/novel-write/modules/` 下创建新模块，然后在 `SKILL.md` 中注册。
+## 常见问题
+
+### Q: 运行 EXE 提示找不到 Claude Code
+
+A: 需要先安装 Claude Code CLI 并配置好 Anthropic 账号。
+
+### Q: 终端输出没有实时显示
+
+A: 确保使用最新版本的 EXE，旧版本可能存在缓冲延迟问题。
+
+### Q: 如何切换深色/浅色主题
+
+A: 在左侧面板底部的主题下拉菜单中选择。
+
+### Q: 如何添加新的小说类型模板
+
+A: 在 `.claude/skills/novel-write/templates/genre-templates/` 下创建新的 `.md` 文件。
+
+---
+
+## 反馈交流
+
+- GitHub Issues: [提交问题](https://github.com/ShmilyWithme/Shmily_novel_skill/issues)
+- QQ: 1943477162
+- 邮箱: z2960775@gmail.com
 
 ## License
 

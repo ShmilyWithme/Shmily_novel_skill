@@ -303,6 +303,17 @@ novel/
 - **审稿润色** → `modules/utils/review.md`
 - **导出发布** → `modules/utils/export.md`
 
+### 模板文件
+- **章节模板** → `templates/chapter-template.md`
+- **角色卡模板** → `templates/character-card-template.md`
+- **世界观模板** → `templates/worldbuilding-template.md`
+- **类型模板** → `templates/genre-templates/`
+  - 玄幻：`xuanhuan.md`
+  - 都市：`dushi.md`
+  - 科幻：`kehuan.md`
+  - 奇幻：`qihuan.md`
+  - 末世：`moxi.md`
+
 ## 模块化管理
 
 ### 如何添加新模块
@@ -328,6 +339,8 @@ novel/
 6. **渐进生成**：大纲逐层细化，不跳步
 7. **主动提醒**：发现设定矛盾时主动告知用户
 8. **字数控制**：正文生成时严格控制在目标字数范围内
+9. **禁止重复**：不得重复前一章的场景、对话、情节
+10. **变更传播**：角色设定修改后，检查已完成章节和未来梗概
 
 ## 用户命令速查
 
@@ -340,13 +353,15 @@ novel/
 | `写第N章` / `生成第N章` | 撰写章节正文 | chapter-writer |
 | `继续写` | 延续上一章末尾续写 | chapter-writer |
 | `改写第N章 [方向]` | 按指定方向重写章节 | chapter-writer |
+| `扩写第N章` / `扩写第N章第M段` | 扩展章节内容 | chapter-writer |
 | `新建角色 [名称]` | 创建角色设定卡 | character-manager |
 | `修改角色 [名称]` | 更新角色设定 | character-manager |
-| `检查一致性` | 检查人物/设定一致性 | consistency-checker |
+| `检查一致性` / `矛盾检查` | 检查人物/设定一致性 | consistency-checker |
 | `设定世界观` | 创建/编辑世界观 | worldbuilding |
 | `切换风格 [描述]` | 更改文风配置 | style-control |
 | `审稿` | 审阅最近章节 | review |
 | `润色` | 文字打磨 | review |
+| `查重` | 检查重复用词和情节 | review |
 | `进度` | 显示写作进度 | stats |
 | `伏笔追踪` | 显示所有伏笔状态 | stats |
 | `导出` / `合并章节` | 合并所有章节，去除元数据，输出可发布文件 | export |

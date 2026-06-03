@@ -5,9 +5,15 @@ __pycache__/
 *.pyc
 *.pyo
 *.egg-info/
-dist/
 build/
 *.spec
+
+# PyInstaller 输出（EXE文件）
+dist/*.exe
+dist/.claude/
+
+# Claude Code 本地设置
+.claude/settings.local.json
 
 # 用户小说项目（每个用户自己的内容）
 洋柿子我来了/
