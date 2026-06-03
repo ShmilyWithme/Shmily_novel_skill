@@ -142,7 +142,7 @@ novel_write/
 ├── novel_writer_gui.py              # GUI 主程序
 ├── build.bat                        # 打包脚本
 ├── README.md                        # 项目说明
-├── RELEASE_v2.0.md                  # 版本更新公告
+├── RELEASE_v2.1.0.md                # 版本更新公告
 ├── .claude/
 │   └── skills/
 │       └── novel-write/
