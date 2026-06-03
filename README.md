@@ -26,8 +26,15 @@ npm install -g @anthropic-ai/claude-code
 
 **3. 配置 Claude Code**
 
+**方式 A：官方账号（推荐）**
 - 首次运行 `claude` 命令，按提示登录 Anthropic 账号
 - 需要有效的 Claude API 订阅（Pro 或 Max 计划）
+
+**方式 B：使用 ccswitch 接入第三方 API**
+- 安装 ccswitch：`npm install -g ccswitch`
+- 配置第三方 API 密钥（如 OpenRouter、API2D 等）
+- 运行 `ccswitch` 切换到第三方 API
+- 详细教程参考 [ccswitch 文档](https://github.com/nicepkg/ccswitch)
 
 ### 可选依赖（源码运行）
 
