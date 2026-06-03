@@ -169,15 +169,7 @@ novel_write/
 │                   ├── kehuan.md
 │                   ├── qihuan.md
 │                   └── moxi.md
-└── dist/
-    └── 《锈蚀的黎明》/              # 示例项目
-        ├── project.md
-        ├── chapters/
-        ├── characters/
-        ├── outline/
-        ├── worldbuilding/
-        ├── style/
-        └── notes/
+└── dist/                            # 打包输出目录
 ```
 
 ---
@@ -191,7 +183,6 @@ pip install pyinstaller customtkinter
 # 打包
 pyinstaller --onefile --windowed \
     --add-data ".claude/skills;.claude/skills" \
-    --add-data "dist/《锈蚀的黎明》;dist/《锈蚀的黎明》" \
     --name "网文写作助手" \
     novel_writer_gui.py
 ```
