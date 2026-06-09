@@ -1,0 +1,8 @@
+interface:
+  display_name: "网文写作助手"
+  short_description: "全能型网文创作工具，覆盖大纲、章节、角色、世界观、风格全流程"
+  brand_color: "#8B5CF6"
+  default_prompt: "使用 novel-write 来帮我写小说"
+
+policy:
+  allow_implicit_invocation: true
