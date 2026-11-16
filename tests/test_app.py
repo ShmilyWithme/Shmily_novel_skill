@@ -332,7 +332,8 @@ class AppTests(unittest.TestCase):
         manager.top = Mock()
         for name in ("../outside", "CON", "a/b", "a\\b", "NUL.txt", "index"):
             self.assertIsNone(manager._character_file(name, show_error=False))
-        self.assertEqual(manager._character_file("林墨"), str(self.root / "characters/林墨.md"))
+        self.assertEqual(Path(manager._character_file("林墨")).resolve(),
+                         (self.root / "characters/林墨.md").resolve())
 
 
 if __name__ == "__main__":
