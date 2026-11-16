@@ -10,20 +10,13 @@ build/
 
 # PyInstaller 输出（EXE文件）
 dist/*.exe
-dist/.claude/
+dist/SHA256SUMS.txt
 dist/.agents/
 dist/.novel_writer_settings.json
-
-# Claude Code 本地设置
-.claude/settings.local.json
 
 # 用户小说项目（每个用户自己的内容）
 洋柿子我来了/
 dist/《锈蚀的黎明》/
-
-# Claude Code 会话数据
-.session_id
-.claude/sessions/
 
 # 导出文件（自动生成）
 export/
@@ -45,4 +38,5 @@ desktop.ini
 
 # 环境
 .env
+.venv/
 *.log
