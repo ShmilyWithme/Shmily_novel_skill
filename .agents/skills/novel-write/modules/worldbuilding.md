@@ -76,12 +76,12 @@
 
 ### 第三步：类型适配
 
-根据选择的类型，参考对应的类型模板：
-- `templates/genre-templates/xuanhuan-xianxia.md`
-- `templates/genre-templates/urban-realistic.md`
-- `templates/genre-templates/scifi-future.md`
-- `templates/genre-templates/historical-fiction.md`
-- `templates/genre-templates/mystery-thriller.md`
+根据选择的类型，参考 Skill 内置的类型模板：
+- 玄幻：`templates/genre-templates/xuanhuan.md`
+- 都市：`templates/genre-templates/dushi.md`
+- 科幻：`templates/genre-templates/kehuan.md`
+- 奇幻：`templates/genre-templates/qihuan.md`
+- 末世：`templates/genre-templates/moxi.md`
 
 ## 修改世界观流程
 

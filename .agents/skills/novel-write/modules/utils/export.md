@@ -59,7 +59,7 @@
 #### 执行流程
 
 1. **读取卷大纲**
-   - 从 `outline/volume-XX-outline.md` 读取章节范围
+   - 从 `outline/volN-outline.md` 读取章节范围；也兼容 `outline/volume-N-outline.md`
    - 确定起始和结束章节号
 
 2. **筛选章节**

@@ -167,6 +167,7 @@ metadata:
 
 助手：项目创建完成！目录结构如下：
 novel/
+├── project.json
 ├── project.md
 ├── worldbuilding/settings.md
 ├── characters/
@@ -174,10 +175,13 @@ novel/
 │   └── MC.md
 ├── outline/
 │   ├── master-outline.md
+│   ├── vol1-outline.md     # 生成卷纲后创建
 │   └── chapter-outs/
 ├── chapters/
 ├── style/style-config.md
-└── notes/misc.md
+└── notes/
+    ├── misc.md
+    └── canon.md
 ```
 
 ### 第二步：设定世界观

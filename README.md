@@ -7,13 +7,15 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![AI](https://img.shields.io/badge/AI-OpenAI%20Codex-orange)
 
-## 界面预览
+## 界面预览（v2.3.0）
 
-![工作台预览](images/screenshot_1.png)
+以下截图来自当前 v2.3.0 程序，展示 Codex 工作台、章节工位和 Codex 编剧室。
 
-![章节与写作预览](images/screenshot_2.png)
+![v2.3.0 Codex 工作台](images/screenshot_1.png)
 
-![AI 编剧室预览](images/screenshot_3.png)
+![v2.3.0 章节工位](images/screenshot_2.png)
+
+![v2.3.0 Codex 编剧室](images/screenshot_3.png)
 
 ## 版本亮点
 
@@ -77,13 +79,14 @@ novel_write/
 ├── .agents/
 │   └── skills/novel-write/
 │       ├── SKILL.md
+│       ├── agents/openai.yaml
 │       ├── modules/
 │       └── templates/
-├── templates/
-└── dist/
+├── tests/
+└── dist/                         # 本地构建输出（不提交 EXE）
 ```
 
-新建项目时，应用会在小说项目中创建 `chapters/`、`outline/`、`characters/`、`worldbuilding/`、`style/`、`notes/` 和 `export/` 目录，并释放 Codex Skill。
+新建项目时，应用会创建 `project.json`（程序配置）和 `project.md`（可读项目总览），以及 `chapters/`、`outline/`、`characters/`、`worldbuilding/`、`style/`、`notes/` 和 `export/` 目录，并释放 `.agents/skills/novel-write`。大纲文件使用 `outline/master-outline.md`、`outline/volN-outline.md` 和 `outline/chapter-outs/chNNN.md`；同时创建 `notes/misc.md` 与 `notes/canon.md`。
 
 新建项目只创建本地文件；确认任务后点击“发送”才会调用 Codex。`Ctrl+S` 保存当前大纲或书稿。切换项目或退出时会提示处理未保存内容，外部文件发生变化时会先提示冲突。
 

@@ -30,7 +30,7 @@
 
 ## 使用
 
-下载本页附件中的 EXE，安装并登录 Codex CLI 后运行。源码版需 Python 3.10+：
+下载本页附件中的 `NovelWriter-v2.3.0-Windows.exe`，安装并登录 Codex CLI 后运行。源码版需 Python 3.10+：
 
 ```powershell
 python -m pip install -r requirements.txt

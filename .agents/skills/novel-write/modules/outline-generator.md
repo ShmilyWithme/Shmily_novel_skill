@@ -18,11 +18,11 @@
 
 ### 前置条件
 - 项目已初始化
-- `project.md` 和 `worldbuilding/settings.md` 已存在
+- `project.json`、`project.md` 和 `worldbuilding/settings.md` 已存在
 
 ### 执行步骤
 
-1. **读取** `project.md` 和 `worldbuilding/settings.md` 获取项目信息
+1. **读取** `project.json`、`project.md` 和 `worldbuilding/settings.md` 获取项目信息
 2. **询问**用户关于主线剧情的核心想法（如有）
 3. **生成**总大纲 `outline/master-outline.md`，包含：
    - 故事核心冲突（一句话）
@@ -65,7 +65,7 @@
 ### 执行步骤
 
 1. **读取**总大纲对应卷的内容
-2. **生成** `outline/volume-N.md`，包含：
+2. **生成** `outline/volN-outline.md`（也兼容 `volume-N-outline.md`），包含：
    - 本卷主题和目标
    - 章节规划表（| 章节 | 标题 | 核心事件 | 字数 | 悬念钩子 |）
    - 本卷角色弧线
@@ -112,6 +112,7 @@
    - 卷大纲（本卷的章节规划）
    - 前一章的正文（如有，用于衔接）
    - `notes/misc.md`（伏笔追踪，避免重复埋设或遗漏回收）
+   - `notes/canon.md`（正文已确认事实，优先于计划性大纲）
 2. **检查**伏笔状态：
    - 本章是否有计划回收的伏笔
    - 是否需要埋设新伏笔

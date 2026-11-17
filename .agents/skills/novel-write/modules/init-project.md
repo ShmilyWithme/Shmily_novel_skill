@@ -34,7 +34,8 @@
 
 ```
 novel/
-├── project.md              # 项目总览（元信息、进度追踪）
+├── project.json            # 程序读取的项目配置
+├── project.md              # 可读项目总览（元信息、进度追踪）
 ├── worldbuilding/
 │   └── settings.md         # 世界观设定
 ├── characters/
@@ -42,7 +43,7 @@ novel/
 │   └── MC.md               # 主角设定卡
 ├── outline/
 │   ├── master-outline.md   # 总大纲
-│   ├── volume-1.md         # 第一卷大纲
+│   ├── vol1-outline.md     # 生成卷纲后创建（也兼容 volume-1-outline.md）
 │   └── chapter-outs/
 │       └── ch001.md        # 第1章梗概
 ├── chapters/
@@ -50,7 +51,8 @@ novel/
 ├── style/
 │   └── style-config.md     # 当前文风配置
 └── notes/
-    └── misc.md             # 杂项笔记、伏笔追踪
+    ├── misc.md             # 杂项笔记、伏笔追踪
+    └── canon.md            # 正文已确认事实
 ```
 
 ### 第三步：生成项目文件
@@ -82,12 +84,14 @@ novel/
 - `characters/MC.md`：使用 `templates/character-card-template.md` 模板
 - `characters/index.md`：创建空的角色索引
 - `outline/master-outline.md`：创建空的大纲文件
-- `style/style-config.md`：使用 `templates/style-guide.md` 中的默认配置
+- `outline/vol1-outline.md`：需要生成卷纲时使用 `volN-outline.md`；已有 `volume-N-outline.md` 也会被识别
+- `style/style-config.md`：按项目平台和目标读者写入默认文风配置
 - `notes/misc.md`：创建空的笔记文件，包含伏笔追踪表
+- `notes/canon.md`：创建空的正文事实正典
 
 ## 注意事项
 
 1. 如果用户未提供某些信息，使用默认值或留空
 2. 所有文件使用 UTF-8 编码
 3. 文件名使用英文或拼音，避免中文路径问题
-4. 创建完成后向用户展示项目结构
+4. 创建完成后向用户展示项目结构；桌面程序会在用户点击发送前只创建本地文件，不自动调用 Codex

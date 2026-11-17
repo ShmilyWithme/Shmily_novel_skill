@@ -34,7 +34,7 @@ git diff --check
 
 输出：
 
-- `dist/网文写作助手.exe`：单文件桌面程序。
+- `dist/网文写作助手.exe`：单文件桌面程序（GitHub Release 上传时命名为 `NovelWriter-v2.3.0-Windows.exe`）。
 - `dist/SHA256SUMS.txt`：发布文件的 SHA-256 校验值。
 
 脚本仅清理 `build/release/` 构建缓存，保留 `dist` 中的用户项目和配置。打包后会逐文件比较内置 Skill 与源码；校验失败会使构建失败。发布包只包含程序、依赖和通用 Skill，不包含用户小说、登录凭据或应用设置。
@@ -43,7 +43,7 @@ git diff --check
 
 ## 发布
 
-1. 更新 `APP_VERSION`、README 和对应版本的更新记录。
+1. 更新 `APP_VERSION`、README、界面预览图和对应版本的更新记录。
 2. 通过检查并重新构建。
 3. 将软件源码提交并推送到 GitHub。
 4. 创建指向同一提交的版本标签及 GitHub Release，附上 EXE、`SHA256SUMS.txt` 和更新记录。
