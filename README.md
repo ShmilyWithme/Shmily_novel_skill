@@ -7,19 +7,19 @@
 ![License](https://img.shields.io/badge/License-MIT-green)
 ![AI](https://img.shields.io/badge/AI-OpenAI%20Codex-orange)
 
-## 界面预览（v2.3.0）
+## 界面预览（v2.3.1）
 
-以下截图来自当前 v2.3.0 程序，展示 Codex 工作台、章节工位和 Codex 编剧室。
+以下截图来自当前 v2.3.1 程序，展示 Codex 工作台、章节工位和 Codex 编剧室。
 
-![v2.3.0 Codex 工作台](images/screenshot_1.png)
+![v2.3.1 Codex 工作台](images/screenshot_1.png)
 
-![v2.3.0 章节工位](images/screenshot_2.png)
+![v2.3.1 章节工位](images/screenshot_2.png)
 
-![v2.3.0 Codex 编剧室](images/screenshot_3.png)
+![v2.3.1 Codex 编剧室](images/screenshot_3.png)
 
 ## 版本亮点
 
-当前版本 **v2.3.0**。修复卷纲误写总纲、未保存修改丢失、外部文件冲突、任务取消和导出一致性等问题，详见 [更新记录](RELEASE_v2.3.0.md)。Windows EXE 可从 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases/latest) 下载。
+当前版本 **v2.3.1**。修复卷纲误写总纲、未保存修改丢失、外部文件冲突、任务取消和 Codex CLI 自动发现等问题，详见 [更新记录](RELEASE_v2.3.1.md)。Windows EXE 可从 [Releases](https://github.com/ShmilyWithme/Shmily_novel_skill/releases/latest) 下载。
 
 当前版本通过本机 Codex CLI 执行写作任务，项目 Skill 位于 `.agents/skills/novel-write`。应用自动把任务提示通过标准输入传给 Codex，并在小说项目目录内运行。
 
@@ -104,7 +104,7 @@ build.bat
 python build_release.py
 ```
 
-构建会把 Codex Skill 打包进单文件 EXE，输出到 `dist/网文写作助手.exe`。用户仍需自行安装并登录 Codex CLI。
+构建会把 Codex Skill 打包进单文件 EXE，输出到 `dist/网文写作助手.exe`。程序会自动查找 PATH、npm 全局目录和 Codex Desktop 安装目录中的 CLI；用户仍需自行安装并登录 Codex CLI。
 
 构建前安装 `requirements-build.txt` 中的依赖。脚本验证包内 Skill 与源码一致，并生成 `dist/SHA256SUMS.txt`；详细步骤见 [构建说明](BUILD_README.md)。
 
@@ -122,7 +122,7 @@ git diff --check
 
 ### 找不到 Codex CLI
 
-确认 `codex` 已安装且位于 PATH 中，然后重新启动应用。可运行 `codex --version` 检查安装。
+确认已安装并登录 Codex CLI。程序会自动查找 PATH、`%APPDATA%\npm`、`%LOCALAPPDATA%\npm` 和 `%LOCALAPPDATA%\OpenAI\Codex\bin\*\codex.exe`；也可以设置 `CODEX_PATH` 指向自定义 CLI。可运行 `codex --version` 检查安装。
 
 ### Codex 返回 503 或连接本地服务失败
 

@@ -267,6 +267,24 @@ class AppTests(unittest.TestCase):
         self.assertIn("workspace-write", command)
         self.assertEqual(command[-1], "-")
 
+    def test_codex_desktop_installation_is_found_without_path_entry(self):
+        install_root = self.root / "LocalAppData" / "OpenAI" / "Codex" / "bin" / "version-1"
+        install_root.mkdir(parents=True)
+        executable = install_root / "codex.exe"
+        executable.write_bytes(b"stub")
+        with patch.object(gui.shutil, "which", return_value=None), patch.dict(
+                os.environ,
+                {"LOCALAPPDATA": str(self.root / "LocalAppData"), "CODEX_PATH": ""},
+                clear=False):
+            self.assertEqual(Path(gui.resolve_codex_path()).resolve(), executable.resolve())
+            self.assertIsNone(self.app.preflight_ai_command(str(self.root)))
+
+    def test_codex_command_uses_resolved_executable(self):
+        with patch.object(gui, "resolve_codex_path", return_value=r"C:\Codex\codex.exe"):
+            command, _ = self.app.build_ai_command("查看状态")
+        self.assertEqual(command[0], r"C:\Codex\codex.exe")
+        self.assertNotIn("cmd.exe", command)
+
     def test_review_targets_selected_chapter(self):
         self.app._loaded_chapter_num = 12
         self.app.send_message = Mock()

@@ -113,7 +113,7 @@ FONT_DISPLAY = ("Microsoft YaHei UI", 18, "bold")
 FONT_CARD_TITLE = ("Microsoft YaHei UI", 14, "bold")
 
 APP_SETTINGS_FILE = ".novel_writer_settings.json"
-APP_VERSION = "2.3.0"
+APP_VERSION = "2.3.1"
 REQUIRED_SKILL_FILES = (
     "SKILL.md",
     os.path.join("agents", "openai.yaml"),
@@ -138,6 +138,69 @@ WINDOWS_RESERVED_NAMES = {
     *(f"COM{i}" for i in range(1, 10)),
     *(f"LPT{i}" for i in range(1, 10)),
 }
+
+
+def resolve_codex_path(environment=None):
+    """查找 Windows 上的 Codex CLI，兼容 npm shim 和 Codex Desktop 安装。"""
+    environment = environment or os.environ
+    candidates = []
+
+    configured = environment.get("CODEX_PATH", "").strip().strip('"')
+    if configured:
+        candidates.append(configured)
+
+    for command in ("codex", "codex.exe", "codex.cmd", "codex.bat"):
+        found = shutil.which(command)
+        if found:
+            candidates.append(found)
+
+    appdata = environment.get("APPDATA", "")
+    local_appdata = environment.get("LOCALAPPDATA", "")
+    candidates.extend([
+        os.path.join(appdata, "npm", "codex.cmd"),
+        os.path.join(appdata, "npm", "codex.exe"),
+        os.path.join(local_appdata, "npm", "codex.cmd"),
+        os.path.join(local_appdata, "npm", "codex.exe"),
+    ])
+
+    # Codex Desktop puts the bundled CLI in a versioned subdirectory.
+    codex_bin = os.path.join(local_appdata, "OpenAI", "Codex", "bin")
+    if os.path.isdir(codex_bin):
+        try:
+            versioned = [
+                os.path.join(codex_bin, name, "codex.exe")
+                for name in os.listdir(codex_bin)
+            ]
+            versioned.sort(key=lambda path: os.path.getmtime(path) if os.path.isfile(path) else 0,
+                           reverse=True)
+            candidates.extend(versioned)
+        except OSError:
+            pass
+
+    seen = set()
+    for candidate in candidates:
+        if not candidate:
+            continue
+        normalized = os.path.abspath(os.path.expandvars(os.path.expanduser(candidate)))
+        key = os.path.normcase(normalized)
+        if key in seen:
+            continue
+        seen.add(key)
+        if os.path.isfile(normalized):
+            return normalized
+    return None
+
+
+def build_codex_cli_command(arguments=()):
+    """构造可执行的 Codex 命令，避免依赖启动 GUI 时继承的 PATH。"""
+    codex_path = resolve_codex_path()
+    arguments = list(arguments)
+    if codex_path:
+        extension = os.path.splitext(codex_path)[1].lower()
+        if extension in (".exe", ".com"):
+            return [codex_path, *arguments]
+        return ["cmd.exe", "/d", "/c", codex_path, *arguments]
+    return ["cmd.exe", "/d", "/c", "codex", *arguments]
 
 MOJIBAKE_MARKERS = (
     "锟斤拷", "鐨", "涓", "鍦", "鍙", "鏄", "绛", "杩", "瀹", "灏",
@@ -1425,14 +1488,7 @@ class ModernNovelWriterApp:
     def build_ai_command(self, message):
         """构造 Codex 命令；任务文本只经 stdin 传入，不经过命令壳解析。"""
         prompt = self.build_codex_prompt(message)
-        codex_path = shutil.which("codex")
-        if codex_path and os.path.splitext(codex_path)[1].lower() in (".exe", ".com"):
-            cmd = [codex_path]
-        else:
-            # npm 在 Windows 上通常安装 .cmd shim。命令行内容保持常量，
-            # 项目路径交给 Popen(cwd=...)，用户任务通过 stdin 传输。
-            cmd = ["cmd.exe", "/d", "/c", "codex"]
-        cmd.extend([
+        cmd = build_codex_cli_command([
             "--ask-for-approval", "never",
             "exec",
             "--skip-git-repo-check",
@@ -1445,6 +1501,10 @@ class ModernNovelWriterApp:
     def build_ai_environment(self):
         """构造 AI 子进程环境变量。"""
         env = os.environ.copy()
+        codex_path = resolve_codex_path(env)
+        if codex_path:
+            codex_directory = os.path.dirname(codex_path)
+            env["PATH"] = codex_directory + os.pathsep + env.get("PATH", "")
         env.setdefault("PYTHONUTF8", "1")
         env.setdefault("PYTHONIOENCODING", "utf-8")
         env.setdefault("LANG", "C.UTF-8")
@@ -1469,14 +1529,16 @@ class ModernNovelWriterApp:
 
     def preflight_ai_command(self, cwd):
         """执行前做快速检查，避免明显不可用的 CLI 配置长时间卡住。"""
-        if not shutil.which("codex"):
-            return "未找到 Codex CLI，请先安装：npm install -g @openai/codex@latest"
+        codex_path = resolve_codex_path()
+        if not codex_path:
+            return ("未找到 Codex CLI。请安装并登录 Codex，或把 codex.exe 放入 PATH；"
+                    "npm 安装命令：npm install -g @openai/codex@latest")
         return None
 
     def check_codex_login_status(self, cwd):
         """快速确认 Codex CLI 是否有可用登录凭据。"""
         returncode, output, timed_out = self.run_command_with_timeout(
-            ["cmd.exe", "/d", "/c", "codex", "login", "status"],
+            build_codex_cli_command(["login", "status"]),
             cwd,
             timeout=8,
         )
@@ -1962,7 +2024,7 @@ class ModernNovelWriterApp:
             f"EXE/源码内置 Skill: {'完整' if has_bundled_skill_resources() else '不完整'}",
         ]
 
-        codex_path = shutil.which("codex")
+        codex_path = resolve_codex_path()
         lines.append(f"PATH 中的 codex: {codex_path or '未找到'}")
 
         if self.project_path:
@@ -1978,10 +2040,10 @@ class ModernNovelWriterApp:
             lines.append(f"本机 provider 端口进程: {self.find_local_port_owner(local_base_url)}")
         lines.append("")
         lines.append(self.capture_command("where codex", ["where.exe", "codex"], timeout=8))
-        lines.append(self.capture_command("codex --version", ["cmd.exe", "/d", "/c", "codex", "--version"], timeout=8))
+        lines.append(self.capture_command("codex --version", build_codex_cli_command(["--version"]), timeout=8))
         lines.append("[Codex 诊断] 执行任务时直接调用 codex exec，并读取本机 Codex CLI 的现有配置。")
         lines.append(self.capture_command(
-            "codex login status", ["cmd.exe", "/d", "/c", "codex", "login", "status"], timeout=8))
+            "codex login status", build_codex_cli_command(["login", "status"]), timeout=8))
 
         joined = "\n".join(lines)
         if "127.0.0.1" in joined or "503 Service Unavailable" in joined:
